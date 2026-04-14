@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jnomics | Reader Revenue Sustainability Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black:    #0a0a0a;
+            --black-2:  #141414;
+            --black-3:  #1c1c1c;
+            --border:   rgba(255,255,255,0.08);
+            --border-2: rgba(255,255,255,0.13);
+            --red:    #AB413C;
+            --red-2:  #C4524D;
+            --red-glow: rgba(171,65,60,0.18);
+            --text:     #F5F0EB;
+            --muted:    #8a8178;
+            --muted-2:  #5c574f;
+            --emerald:  #34d399;
+            --amber:    #fbbf24;
+            --rose:     #fb7185;
+            --blue:     #60a5fa;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { 
+            font-family: 'DM Sans', sans-serif; 
+            background-color: var(--black); 
+            color: var(--text); 
+            -webkit-font-smoothing: antialiased;
+        }
+        .display { font-family: 'Playfair Display', serif; }
+        .mono { font-family: 'DM Mono', monospace; }
+
+        /* --- Glass / card --- */
+        .card { background: var(--black-2); border: 1px solid var(--border); border-radius: 16px; }
+        .card-dark { background: var(--black-3); border: 1px solid var(--border); border-radius: 12px; }
+        .card-inset { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; }
+
+        /* --- Inputs --- */
+        .inp { 
+            background: var(--black); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            color: var(--text); 
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); outline: none; }
+        select.inp { cursor: pointer; }
+
+        /* --- Buttons --- */
+        .btn-primary { 
+            background: var(--red); 
+            color: white; 
+            font-weight: 700; 
+            border-radius: 8px;
+            padding: 14px 28px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { background: var(--red-2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(171,65,60,0.35); }
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border-2);
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-outline:hover { border-color: var(--red); background: var(--red-glow); }
+
+        /* --- Range slider --- */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--red); cursor: pointer; margin-top: -7px; box-shadow: 0 0 10px var(--red-glow); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        /* --- Funnel --- */
+        .funnel-step { flex: 1; text-align: center; position: relative; z-index: 1; }
+        .funnel-connector { height: 2px; width: 36px; background: rgba(255,255,255,0.08); position: relative; margin-top: 2rem; flex-shrink: 0; }
+        .funnel-rate { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: var(--black-2); border: 1px solid var(--border-2); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+
+        /* --- Section dividers --- */
+        .phase-label { display: inline-flex; align-items: center; gap: 8px; }
+
+        /* --- Blur gate --- */
+        .blur-gate { filter: blur(10px) brightness(0.6); pointer-events: none; transition: all 0.5s; }
+        .gate-removed { filter: none; pointer-events: auto; }
+
+        /* --- Pillar accordion --- */
+        .pillar-row { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
+        .pillar-row:hover { border-color: var(--border-2); }
+        .pillar-row.open { border-color: rgba(171,65,60,0.35); }
+        .pillar-header { display: flex; align-items: center; gap: 16px; padding: 16px 20px; cursor: pointer; background: var(--black-2); user-select: none; }
+        .pillar-header:hover { background: var(--black-3); }
+        .pillar-body { background: var(--black); border-top: 1px solid var(--border); padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.2s; }
+        .pillar-body.open { max-height: 900px; padding: 20px; }
+        .score-bar-track { background: rgba(255,255,255,0.06); border-radius: 999px; height: 5px; position: relative; overflow: visible; }
+        .score-bar-you { height: 5px; border-radius: 999px; transition: width 0.8s cubic-bezier(.4,0,.2,1); position: relative; z-index: 2; }
+        .bench-marker { position: absolute; top: -4px; width: 2px; height: 13px; border-radius: 1px; z-index: 3; }
+        .pillar-caret { transition: transform 0.3s; flex-shrink: 0; }
+        .pillar-row.open .pillar-caret { transform: rotate(180deg); }
+
+        /* --- Recommendations --- */
+        .rec-card { background: var(--black-2); border: 1px solid var(--border); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+        .rec-card:hover { border-color: var(--border-2); }
+        .rec-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+        .priority-1::before { background: linear-gradient(90deg, var(--rose), #f97316); }
+        .priority-2::before { background: linear-gradient(90deg, var(--amber), #84cc16); }
+        .priority-3::before { background: linear-gradient(90deg, var(--blue), #818cf8); }
+
+        /* --- Stage cards --- */
+        .stage-card { border-radius: 10px; padding: 14px; text-align: center; border: 1px solid transparent; transition: all 0.2s; }
+        .stage-card.active { border-color: var(--red) !important; background: rgba(171,65,60,0.08) !important; }
+
+        /* --- Animations --- */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp 0.5s ease both; }
+        .fu1 { animation-delay: 0.08s; }
+        .fu2 { animation-delay: 0.18s; }
+        .fu3 { animation-delay: 0.28s; }
+        @keyframes pulse-dot { 0%,100% { opacity:0.6; transform:scale(1); } 50% { opacity:1; transform:scale(1.3); } }
+        .pulse { animation: pulse-dot 2s infinite; }
+
+        /* --- Progress dots --- */
+        .pdot { width: 20px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.1); transition: background 0.3s; }
+        .pdot.filled { background: var(--red); }
+
+        /* --- Coverage bar --- */
+        .cov-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+
+        /* ---- Horizontal scroll hint on small screens ---- */
+        .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* --- Divider --- */
+        .section-divider { border-top: 1px solid var(--border); padding-top: 80px; margin-top: 80px; }
+
+        /* --- Label tag --- */
+        .tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+        .tag-red { background: rgba(171,65,60,0.12); border: 1px solid rgba(171,65,60,0.25); color: var(--red-2); }
+        .tag-grey { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted); }
+        .tag-emerald { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: var(--emerald); }
+        .tag-amber { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: var(--amber); }
+        .tag-rose { background: rgba(251,113,133,0.08); border: 1px solid rgba(251,113,133,0.2); color: var(--rose); }
+
+        /* --- KPI card --- */
+        .kpi { padding: 20px; }
+        .kpi-val { font-size: 2.25rem; font-weight: 800; line-height: 1; }
+    </style>
+</head>
+<body class="min-h-screen pb-32">
+
+    <!-- ======= HEADER ======= -->
+    <header class="max-w-7xl mx-auto px-6 lg:px-8 pt-14 pb-12">
+        <div class="flex items-center gap-3 mb-8">
+            <img src="https://images.squarespace-cdn.com/content/v1/65f465efcce3711823e07333/db2da779-08f4-40d1-88c8-68e983eae7e5/logo.png?format=300w" alt="Jnomics" class="h-7 opacity-90" onerror="this.style.display='none'; document.getElementById('wordmark').style.display='block';">
+            <span id="wordmark" class="display text-xl font-bold hidden" style="color:var(--text)">Jnomics</span>
+        </div>
+        <div class="max-w-4xl">
+            <span class="tag tag-red mb-5" style="display:inline-flex;">Reader Revenue · Sustainability Engine</span>
+            <h1 class="display text-5xl md:text-6xl lg:text-7xl font-black leading-none tracking-tight mb-5" style="color:var(--text)">
+                Editorial Sustainability<br>
+                <span style="color:var(--red)">&amp; Maturity</span>
+            </h1>
+            <p class="text-lg leading-relaxed max-w-2xl" style="color:var(--muted)">Simulate your financial trajectory. Then run a 9-pillar diagnostic to reveal the operational bottlenecks preventing you from reaching it — scored against industry benchmarks.</p>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 space-y-0">
+
+    <!-- ================================================ -->
+    <!-- PHASE 1: FINANCIAL & FUNNEL SIMULATION           -->
+    <!-- ================================================ -->
+    <div>
+        <div class="flex items-center gap-4 mb-8">
+            <span class="mono text-xs" style="color:var(--muted-2)">01</span>
+            <h2 class="text-xl font-bold" style="color:var(--text)">Financial & Funnel Simulation</h2>
+            <div class="flex-1 h-px" style="background:var(--border)"></div>
+        </div>
+
+        <!-- Input panels -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Audience -->
+            <div class="card p-6" style="border-top:2px solid var(--red)">
+                <p class="mono text-[10px] font-bold mb-4" style="color:var(--muted);letter-spacing:.1em;text-transform:uppercase">A — Audience</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Monthly Uniques <span style="color:var(--rose)">*</span></label>
+                        <input type="number" id="uu" value="500000" class="inp">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Returning Users</label>
+                        <input type="number" id="ru" value="125000" class="inp">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Owned Audience <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Email / TG</span></label>
+                        <input type="number" id="owned" value="25000" class="inp">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monetization -->
+            <div class="card p-6" style="border-top:2px solid rgba(171,65,60,0.45)">
+                <p class="mono text-[10px] font-bold mb-4" style="color:var(--muted);letter-spacing:.1em;text-transform:uppercase">B — Monetization</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Active Patrons / Subs <span style="color:var(--rose)">*</span></label>
+                        <input type="number" id="subs" value="1000" class="inp">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">ARPU (€) <span style="color:var(--rose)">*</span></label>
+                            <input type="number" id="arpu" value="10" step="0.5" class="inp">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Mo. Churn % <span style="color:var(--rose)">*</span></label>
+                            <input type="number" id="churn" value="8.0" step="0.1" class="inp">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financials -->
+            <div class="card p-6" style="border-top:2px solid rgba(251,113,133,0.45)">
+                <p class="mono text-[10px] font-bold mb-4" style="color:var(--muted);letter-spacing:.1em;text-transform:uppercase">C — Financials</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Annual Newsroom Cost (€) <span style="color:var(--rose)">*</span></label>
+                        <input type="number" id="newsCost" value="350000" class="inp">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Other Annual Revenue (€) <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Grants · Ads · Events</span></label>
+                        <input type="number" id="otherRev" value="380000" class="inp">
+                        <p class="text-[10px] mt-1" style="color:var(--muted-2)">Everything except reader subscriptions</p>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Platform Fee % <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Patreon etc.</span></label>
+                        <input type="number" id="platFee" value="10" class="inp" style="color:var(--rose)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funnel -->
+        <div class="card p-6 mb-6 scroll-x">
+            <div class="flex items-center justify-between mb-6 min-w-[560px]">
+                <p class="mono text-[10px] font-bold" style="color:var(--muted);letter-spacing:.1em;text-transform:uppercase">Conversion Funnel</p>
+                <div class="card-inset px-3 py-1.5 flex items-center gap-2">
+                    <span class="mono text-[10px]" style="color:var(--muted)">Owned-to-Paid</span>
+                    <strong class="mono text-sm" style="color:var(--red)" id="overallConv">0.00%</strong>
+                </div>
+            </div>
+            <div class="flex items-start justify-center min-w-[560px] mt-2 pb-4">
+                <div class="funnel-step">
+                    <p class="text-[10px] font-bold mb-2" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">1. Uniques</p>
+                    <div class="card-inset px-4 py-3 inline-block min-w-[110px]">
+                        <p class="text-lg font-bold" id="f-uu" style="color:var(--text)">0</p>
+                    </div>
+                </div>
+                <div class="funnel-connector"><div class="funnel-rate" id="r-uu-ru">0%</div></div>
+                <div class="funnel-step">
+                    <p class="text-[10px] font-bold mb-2" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">2. Returning</p>
+                    <div style="background:rgba(171,65,60,0.08);border:1px solid rgba(171,65,60,0.2);" class="rounded-lg px-4 py-3 inline-block min-w-[110px]">
+                        <p class="text-lg font-bold" id="f-ru" style="color:var(--text)">0</p>
+                    </div>
+                </div>
+                <div class="funnel-connector"><div class="funnel-rate" id="r-ru-owned">0%</div></div>
+                <div class="funnel-step">
+                    <p class="text-[10px] font-bold mb-2" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">3. Owned</p>
+                    <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);" class="rounded-lg px-4 py-3 inline-block min-w-[110px]">
+                        <p class="text-lg font-bold" id="f-owned" style="color:var(--text)">0</p>
+                    </div>
+                </div>
+                <div class="funnel-connector"><div class="funnel-rate" style="color:var(--emerald)">Direct</div></div>
+                <div class="funnel-step">
+                    <p class="text-[10px] font-bold mb-2" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.07em">4. Patrons</p>
+                    <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);" class="rounded-lg px-4 py-3 inline-block min-w-[110px]">
+                        <p class="text-lg font-bold" id="f-subs" style="color:var(--text)">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optimisation levers -->
+        <div class="card p-6 mb-6" style="background:rgba(171,65,60,0.04);border-color:rgba(171,65,60,0.15)">
+            <div class="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
+                <div class="lg:w-1/3">
+                    <h3 class="text-base font-bold mb-1" style="color:var(--text)">Optimisation Levers</h3>
+                    <p class="text-sm leading-relaxed" style="color:var(--muted)">Simulate the impact of improving your conversion and churn over the next 12 months.</p>
+                </div>
+                <div class="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    <div class="card-dark p-4 rounded-xl">
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="text-[11px] font-bold" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">Target Owned-to-Paid Conv.</label>
+                            <span class="text-lg font-bold" id="targetConvDisplay" style="color:var(--text)">4.0%</span>
+                        </div>
+                        <input type="range" id="targetConvSlider" min="1.0" max="25.0" step="0.5" value="4.0">
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-[10px]" style="color:var(--muted)">Target subscriber count</span>
+                            <span class="mono text-[11px] font-bold" id="targetSubsPreview" style="color:var(--red)">—</span>
+                        </div>
+                    </div>
+                    <div class="card-dark p-4 rounded-xl">
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="text-[11px] font-bold" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">Target Monthly Churn</label>
+                            <span class="text-lg font-bold" id="targetChurnDisplay" style="color:var(--text)">4.0%</span>
+                        </div>
+                        <input type="range" id="targetChurnSlider" min="1.0" max="15.0" step="0.5" value="4.0">
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-[10px]" style="color:var(--muted)">Implied avg sub lifetime</span>
+                            <span class="mono text-[11px] font-bold" id="targetLifetimePreview" style="color:var(--amber)">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output panel -->
+        <div class="card p-8 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full" style="background:var(--red);filter:blur(120px);opacity:0.05;pointer-events:none;"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- KPIs -->
+                <div class="lg:col-span-4 space-y-4 border-b lg:border-b-0 lg:border-r pb-6 lg:pb-0 lg:pr-8" style="border-color:var(--border)">
+                    <!-- Sustainability -->
+                    <div>
+                        <p class="mono text-[10px] mb-1" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Editorial Sustainability</p>
+                        <div id="coveragePercent" class="kpi-val mb-1.5">0%</div>
+                        <div style="background:rgba(255,255,255,0.05);border-radius:999px;height:5px;">
+                            <div id="coverageBar" class="cov-bar-fill" style="width:0%;background:var(--red)"></div>
+                        </div>
+                        <p class="text-[10px] mt-1.5" style="color:var(--muted-2)">Total net revenue vs annual newsroom cost</p>
+                    </div>
+
+                    <!-- MRR + LTV row -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="card-inset p-3">
+                            <p class="mono text-[9px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.07em">Monthly RR (net)</p>
+                            <p class="text-lg font-bold" id="mrrAmt" style="color:var(--text)">€0</p>
+                            <p class="text-[9px] mt-0.5" style="color:var(--muted-2)">after platform fees</p>
+                        </div>
+                        <div class="card-inset p-3">
+                            <p class="mono text-[9px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.07em">Avg Subscriber LTV</p>
+                            <p class="text-lg font-bold" id="ltvAmt" style="color:var(--text)">€0</p>
+                            <p class="text-[9px] mt-0.5" style="color:var(--muted-2)">ARPU ÷ monthly churn</p>
+                        </div>
+                    </div>
+
+
+                    <!-- Revenue Mix donut -->
+                    <div class="card-inset p-4">
+                        <p class="mono text-[10px] mb-3" style="color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Revenue Mix</p>
+                        <div class="flex items-center gap-4">
+                            <div style="position:relative;width:80px;height:80px;flex-shrink:0;">
+                                <canvas id="donutChart" width="80" height="80"></canvas>
+                                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                                    <span id="readerPct" class="mono text-[11px] font-bold" style="color:var(--text)">—</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-[11px] flex-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="flex items-center gap-1.5" style="color:var(--muted)">
+                                        <span class="w-2 h-2 rounded-full inline-block" style="background:var(--red)"></span>Reader rev
+                                    </span>
+                                    <strong id="readerRevAmt" style="color:var(--text)">€0</strong>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="flex items-center gap-1.5" style="color:var(--muted)">
+                                        <span class="w-2 h-2 rounded-full inline-block" style="background:rgba(255,255,255,0.15)"></span>Other rev
+                                    </span>
+                                    <strong id="otherRevAmt" style="color:var(--text)">€0</strong>
+                                </div>
+                                <div style="border-top:1px solid var(--border);padding-top:6px;" class="flex items-center justify-between gap-2">
+                                    <span style="color:var(--muted)">Total</span>
+                                    <strong id="totalRevAmt" style="color:var(--text)">€0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-inset p-4">
+                        <p class="mono text-[10px] mb-1" style="color:var(--rose);text-transform:uppercase;letter-spacing:.07em">Platform Tax Leak / yr</p>
+                        <p class="text-xl font-bold" id="taxAmt" style="color:var(--rose)">€0</p>
+                    </div>
+                    <div class="card-inset p-4">
+                        <p class="mono text-[10px] mb-1" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.07em">Optimisation Upside (12mo)</p>
+                        <p class="text-xl font-bold" id="unlockedRev" style="color:var(--emerald)">€0</p>
+                        <p class="text-[10px] mt-1" style="color:var(--muted-2)">vs status quo, reader rev only</p>
+                    </div>
+                </div>
+                <!-- Chart -->
+                <div class="lg:col-span-8">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
+                        <div>
+                            <h3 class="text-base font-bold" style="color:var(--text)">12-Month Reader Revenue Trajectory</h3>
+                            <p class="text-[11px] mt-0.5" style="color:var(--muted)">Reader revenue net of platform fees · other revenue excluded</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]" style="color:var(--muted)">
+                            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-0.5 rounded" style="background:var(--red)"></span>Optimised</span>
+                            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-0.5 rounded" style="background:rgba(255,255,255,0.25)"></span>Status quo</span>
+                            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-0.5 rounded" style="background:var(--emerald)"></span>Breakeven</span>
+                        </div>
+                    </div>
+                    <div class="w-full" style="height:300px;position:relative;">
+                        <canvas id="scenarioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- PHASE 2: SUSTAINABILITY DIAGNOSTIC               -->
+    <!-- ================================================ -->
+    <div class="section-divider" id="phase2">
+
+        <!-- Section header -->
+        <div class="flex items-center gap-4 mb-10">
+            <span class="mono text-xs" style="color:var(--muted-2)">02</span>
+            <h2 class="text-xl font-bold" style="color:var(--text)">Sustainability Diagnostic</h2>
+            <div class="flex-1 h-px" style="background:var(--border)"></div>
+            <span class="tag tag-red">9 Pillars</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+            <div class="lg:col-span-8">
+                <h3 class="display text-3xl md:text-4xl font-black mb-4 leading-tight" style="color:var(--text)">Where are you on the reader<br>revenue maturity spectrum?</h3>
+                <p class="text-base leading-relaxed max-w-2xl" style="color:var(--muted)">This 9-pillar audit is built on the four-stage reader revenue maturity model used by leading media consultancies worldwide. Answer honestly — your results are benchmarked against global industry data and generate a personalised action plan.</p>
+            </div>
+            <div class="lg:col-span-4 flex items-center">
+                <div class="card p-5 w-full">
+                    <p class="mono text-[10px] mb-4" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.1em">You will receive</p>
+                    <div class="space-y-2.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(171,65,60,0.12);border:1px solid rgba(171,65,60,0.3)">
+                                <svg class="w-3 h-3" style="color:var(--red)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <p class="text-sm">Maturity stage classification</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(171,65,60,0.12);border:1px solid rgba(171,65,60,0.3)">
+                                <svg class="w-3 h-3" style="color:var(--red)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <p class="text-sm">Radar vs. industry benchmarks</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(171,65,60,0.12);border:1px solid rgba(171,65,60,0.3)">
+                                <svg class="w-3 h-3" style="color:var(--red)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <p class="text-sm">Priority recommendations per pillar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Stages reference -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12" id="stageBar">
+            <div class="stage-card" style="background:rgba(251,113,133,0.06);border-color:rgba(251,113,133,0.15);">
+                <p class="mono text-[10px] font-bold mb-1" style="color:var(--rose);text-transform:uppercase;letter-spacing:.08em">Stage 1</p>
+                <p class="text-sm font-bold mb-1.5" style="color:var(--text)">Reactive</p>
+                <p class="text-[11px] leading-snug" style="color:var(--muted)">Ad/grant-led. No unified subscriber strategy.</p>
+            </div>
+            <div class="stage-card" style="background:rgba(251,191,36,0.06);border-color:rgba(251,191,36,0.15);">
+                <p class="mono text-[10px] font-bold mb-1" style="color:var(--amber);text-transform:uppercase;letter-spacing:.08em">Stage 2</p>
+                <p class="text-sm font-bold mb-1.5" style="color:var(--text)">Emerging</p>
+                <p class="text-[11px] leading-snug" style="color:var(--muted)">Basic subs launched. Manual data. Mixed KPIs.</p>
+            </div>
+            <div class="stage-card" style="background:rgba(96,165,250,0.06);border-color:rgba(96,165,250,0.15);">
+                <p class="mono text-[10px] font-bold mb-1" style="color:var(--blue);text-transform:uppercase;letter-spacing:.08em">Stage 3</p>
+                <p class="text-sm font-bold mb-1.5" style="color:var(--text)">Advanced</p>
+                <p class="text-[11px] leading-snug" style="color:var(--muted)">Sub-first culture. RFV scoring. Dynamic paywalls.</p>
+            </div>
+            <div class="stage-card" style="background:rgba(52,211,153,0.06);border-color:rgba(52,211,153,0.15);">
+                <p class="mono text-[10px] font-bold mb-1" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.08em">Stage 4</p>
+                <p class="text-sm font-bold mb-1.5" style="color:var(--text)">Strategic</p>
+                <p class="text-[11px] leading-snug" style="color:var(--muted)">AI-driven. Predictive churn. LTV-guided editorial.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+
+            <!-- Left: Questionnaire -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-xs font-semibold" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Answer all 9 pillars</p>
+                    <div class="flex gap-1" id="progressDots"></div>
+                </div>
+                <form id="assessmentForm" class="space-y-2.5">
+                    <!-- Q items injected by JS for DRYness -->
+                </form>
+                <button type="button" onclick="generateDiagnostic()" class="btn-primary w-full mt-5 justify-center" style="font-size:1rem;padding:16px;">
+                    Generate My Diagnostic
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </button>
+            </div>
+
+            <!-- Right: Radar -->
+            <div id="radarContainer" class="card flex flex-col items-center justify-center relative" style="min-height:700px;">
+
+                <!-- Placeholder -->
+                <div id="radarPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-10 z-20 text-center transition-opacity duration-300">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style="background:rgba(171,65,60,0.08);border:1px solid rgba(171,65,60,0.15)">
+                        <svg class="w-8 h-8" style="color:var(--red);opacity:0.6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2" style="color:var(--text)">Awaiting Your Diagnostic</h3>
+                    <p class="text-sm leading-relaxed" style="color:var(--muted)">Complete all 9 pillars to generate your maturity radar, benchmarked against global industry data.</p>
+                    <div class="flex items-center gap-5 mt-8 text-[11px]" style="color:var(--muted)">
+                        <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full inline-block pulse" style="background:var(--red)"></span>Your score</span>
+                        <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:var(--amber)"></span>Industry avg</span>
+                        <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:var(--emerald)"></span>Leading publishers</span>
+                    </div>
+                </div>
+
+                <!-- Lead gen gate -->
+                <div id="leadGenGate" class="absolute inset-0 z-30 flex flex-col items-center justify-center p-8 opacity-0 pointer-events-none transition-opacity duration-400" style="background:rgba(10,10,10,0.88);backdrop-filter:blur(12px);">
+                    <div class="card p-8 max-w-sm w-full text-center" style="border-color:rgba(171,65,60,0.25)">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style="background:rgba(171,65,60,0.1);border:1px solid rgba(171,65,60,0.2)">
+                            <svg class="w-6 h-6" style="color:var(--red)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h3 class="display text-xl font-black mb-1" style="color:var(--text)">Diagnostic Ready</h3>
+                        <p class="text-sm leading-relaxed mb-6" style="color:var(--muted)">Enter your work email to unlock your maturity classification, benchmark comparison, and prioritised recommendations.</p>
+                        <!-- Mailchimp form — visually overridden, posts to MC in hidden iframe -->
+                        <iframe name="mc_hidden_frame" style="display:none;" aria-hidden="true"></iframe>
+                        <form action="https://github.us18.list-manage.com/subscribe/post?u=cf5a8991540707f5ff630c55d&id=20052df0d8&f_id=00f0b3e6f0" method="post" target="mc_hidden_frame" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" novalidate="" onsubmit="handleGateSubmit(event)">
+                            <input type="email" name="EMAIL" id="mce-EMAIL" required placeholder="name@newsroom.com" class="inp text-center mb-3" autocomplete="email">
+                            <!-- MC anti-bot field -->
+                            <div aria-hidden="true" style="position:absolute;left:-5000px;"><input type="text" name="b_cf5a8991540707f5ff630c55d_20052df0d8" tabindex="-1" value=""></div>
+                            <button type="submit" name="subscribe" id="mc-embedded-subscribe" class="btn-primary w-full justify-center" style="font-size:0.9rem;padding:13px;">Unlock Full Report →</button>
+                        </form>
+                        <p class="text-[10px] mt-4" style="color:var(--muted-2)">No spam. Unsubscribe anytime. Your data is never sold.</p>
+                    </div>
+                </div>
+
+                <!-- Results (blurred until unlock) -->
+                <div id="radarResults" class="w-full h-full absolute inset-0 flex flex-col z-10 opacity-0 transition-all duration-500 blur-gate" style="overflow-y:auto;">
+
+                    <!-- Stage hero block -->
+                    <div id="stageHero" class="p-5 pb-4" style="border-bottom:1px solid var(--border);">
+                        <!-- Stage pill + score row -->
+                        <div class="flex items-start justify-between gap-4 mb-3">
+                            <div>
+                                <div id="stagePill" class="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-2" style="background:rgba(171,65,60,0.12);border:1px solid rgba(171,65,60,0.25);">
+                                    <span id="stageDot" class="w-2 h-2 rounded-full inline-block pulse" style="background:var(--red)"></span>
+                                    <span id="stageResult" class="mono text-[11px] font-bold tracking-widest uppercase" style="color:var(--red)">—</span>
+                                </div>
+                                <p id="stageHeadline" class="display text-lg font-black leading-snug" style="color:var(--text)"></p>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <p class="mono text-[9px] mb-0.5" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em">Your avg</p>
+                                <p class="text-3xl font-extrabold leading-none" id="avgScoreDisplay" style="color:var(--text)">—</p>
+                                <p class="mono text-[9px] mt-0.5" style="color:var(--muted-2)">/ 4.0</p>
+                            </div>
+                        </div>
+
+                        <!-- What it means -->
+                        <p id="stageMeaning" class="text-[12px] leading-relaxed mb-3" style="color:var(--muted)"></p>
+
+                        <!-- Why you're here — key signals -->
+                        <div id="stageSignals" class="space-y-1.5"></div>
+                    </div>
+
+                    <!-- Score comparison row -->
+                    <div class="grid grid-cols-3 gap-2 p-4 pb-3">
+                        <div class="card-inset p-2.5 text-center">
+                            <p class="mono text-[9px] font-bold mb-1" style="color:var(--red);text-transform:uppercase">You</p>
+                            <p class="text-xl font-extrabold" id="avgScoreDisplay2" style="color:var(--text)">—</p>
+                            <p class="text-[9px]" style="color:var(--muted-2)">avg score</p>
+                        </div>
+                        <div class="card-inset p-2.5 text-center">
+                            <p class="mono text-[9px] font-bold mb-1" style="color:var(--amber);text-transform:uppercase">Industry</p>
+                            <p class="text-xl font-extrabold" style="color:var(--text)">1.8</p>
+                            <p class="text-[9px]" style="color:var(--muted-2)">global avg</p>
+                        </div>
+                        <div class="card-inset p-2.5 text-center">
+                            <p class="mono text-[9px] font-bold mb-1" style="color:var(--emerald);text-transform:uppercase">Leading</p>
+                            <p class="text-xl font-extrabold" style="color:var(--text)">3.8</p>
+                            <p class="text-[9px]" style="color:var(--muted-2)">top quarter</p>
+                        </div>
+                    </div>
+
+                    <!-- Radar -->
+                    <div class="flex-1 px-4 relative" style="min-height:220px;">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+
+                    <!-- Legend + next step teaser -->
+                    <div class="p-4 pt-3" style="border-top:1px solid var(--border)">
+                        <div class="flex items-center justify-center gap-5 mb-3">
+                            <span class="flex items-center gap-1.5 text-[10px]" style="color:var(--muted)"><span class="w-2.5 h-2.5 rounded-full" style="background:var(--red);display:inline-block"></span>You</span>
+                            <span class="flex items-center gap-1.5 text-[10px]" style="color:var(--muted)"><span class="w-2.5 h-2.5 rounded-full" style="background:var(--amber);display:inline-block"></span>Industry avg</span>
+                            <span class="flex items-center gap-1.5 text-[10px]" style="color:var(--muted)"><span class="w-2.5 h-2.5 rounded-full" style="background:var(--emerald);display:inline-block"></span>Leading publishers</span>
+                        </div>
+                        <div id="stageNextStep" class="card-inset p-3" style="border-color:rgba(171,65,60,0.2)">
+                            <p class="mono text-[9px] font-bold mb-1" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">Your strategic priority</p>
+                            <p id="stageNextStepText" class="text-[11px] leading-relaxed" style="color:var(--muted)"></p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== POST-UNLOCK RESULTS (hidden) ===== -->
+        <div id="postResults" class="hidden mt-16 space-y-14">
+
+            <!-- Pillar Breakdown -->
+            <div class="fade-up">
+                <div class="flex items-center gap-4 mb-3">
+                    <h3 class="text-xl font-bold" style="color:var(--text)">Pillar-by-Pillar Breakdown</h3>
+                    <span class="tag tag-grey">Click any pillar to expand</span>
+                </div>
+                <p class="text-sm mb-6" style="color:var(--muted)">Each pillar shows your score vs the industry average and top publishers. Expand to understand what your score means and what to do next.</p>
+                <div class="space-y-2" id="pillarAccordion"></div>
+
+                <!-- Benchmark legend -->
+                <div class="flex flex-wrap items-center gap-6 mt-5 px-1">
+                    <span class="text-[11px] flex items-center gap-2" style="color:var(--muted)">
+                        <span class="inline-block w-8 h-1 rounded" style="background:var(--red)"></span>Your score
+                    </span>
+                    <span class="text-[11px] flex items-center gap-2" style="color:var(--muted)">
+                        <span class="inline-block w-2 h-3 rounded" style="background:var(--amber);opacity:0.7"></span>Industry avg (global benchmark)
+                    </span>
+                    <span class="text-[11px] flex items-center gap-2" style="color:var(--muted)">
+                        <span class="inline-block w-2 h-3 rounded" style="background:var(--emerald);opacity:0.7"></span>Leading publishers
+                    </span>
+                </div>
+            </div>
+
+            <!-- Priority Recommendations -->
+            <div class="fade-up fu1">
+                <h3 class="text-xl font-bold mb-2" style="color:var(--text)">Priority Recommendations</h3>
+                <p class="text-sm mb-6" style="color:var(--muted)">Your top 3 highest-impact actions — generated from your weakest pillars, grounded in industry best practice.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5" id="recGrid"></div>
+            </div>
+
+            <!-- Benchmark callout -->
+            <div class="fade-up fu2">
+                <div class="card p-7" style="background:rgba(171,65,60,0.03);border-color:rgba(171,65,60,0.12)">
+                    <div class="flex items-center gap-3 mb-5">
+                        <h3 class="text-base font-bold" style="color:var(--text)">Key Industry Benchmarks</h3>
+                        <span class="tag tag-grey">Global data · 400+ publishers</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="card-inset p-4">
+                            <p class="mono text-[10px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase">Newsletter → Paid</p>
+                            <p class="text-2xl font-extrabold" style="color:var(--red)">10×</p>
+                            <p class="text-[11px] mt-1 leading-snug" style="color:var(--muted)">More likely to convert than anonymous visitors</p>
+                        </div>
+                        <div class="card-inset p-4">
+                            <p class="mono text-[10px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase">Avg Monthly Churn</p>
+                            <p class="text-2xl font-extrabold" style="color:var(--rose)">4–5%</p>
+                            <p class="text-[11px] mt-1 leading-snug" style="color:var(--muted)">Industry average; top publishers target &lt;2%</p>
+                        </div>
+                        <div class="card-inset p-4">
+                            <p class="mono text-[10px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase">Visits / User</p>
+                            <p class="text-2xl font-extrabold" style="color:var(--amber)">1.9–2.3</p>
+                            <p class="text-[11px] mt-1 leading-snug" style="color:var(--muted)">Benchmark engagement threshold before paywall</p>
+                        </div>
+                        <div class="card-inset p-4">
+                            <p class="mono text-[10px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase">Revenue Streams</p>
+                            <p class="text-2xl font-extrabold" style="color:var(--emerald)">3+</p>
+                            <p class="text-[11px] mt-1 leading-snug" style="color:var(--muted)">Found in consistently sustainable newsrooms</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dual CTA -->
+            <div class="fade-up fu3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- CTA 1: Strategy call -->
+                    <div class="card p-8 flex flex-col" style="border-color:rgba(171,65,60,0.2)">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4 flex-shrink-0" style="background:rgba(171,65,60,0.1);border:1px solid rgba(171,65,60,0.2)">
+                            <svg class="w-5 h-5" style="color:var(--red)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        </div>
+                        <p class="mono text-[10px] mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Expert guidance</p>
+                        <h3 class="display text-xl font-black mb-2" style="color:var(--text)">Book a strategy call</h3>
+                        <p class="text-sm leading-relaxed mb-6 flex-1" style="color:var(--muted)">Jnomics works with media organisations in 26 countries to translate diagnostics like this into executed strategy. Speak to our team in 30 minutes.</p>
+                        <a href="https://www.jnomics.media/contact" class="btn-primary inline-flex justify-center" style="font-size:0.9rem;">Get in touch ↗</a>
+                    </div>
+                    <!-- CTA 2: Growth plan -->
+                    <div class="card p-8 flex flex-col" style="border-color:rgba(255,255,255,0.1)">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4 flex-shrink-0" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1)">
+                            <svg class="w-5 h-5" style="color:var(--muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        </div>
+                        <p class="mono text-[10px] mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Turn this into a plan</p>
+                        <h3 class="display text-xl font-black mb-2" style="color:var(--text)">Plan your growth</h3>
+                        <p class="text-sm leading-relaxed mb-6 flex-1" style="color:var(--muted)">Want your recommendations turned into a structured 90-day growth workplan? Our team can build a prioritised, sequenced action plan tailored to your newsroom's stage and constraints.</p>
+                        <a href="https://www.jnomics.media/contact" class="btn-outline inline-flex justify-center" style="font-size:0.9rem;">Request a workplan →</a>
+                    </div>
+                </div>
+                <p class="text-center text-[11px] mt-4" style="color:var(--muted-2)">Diagnostic methodology based on global industry research · 400+ publishers across 50+ countries</p>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <script>
+    // =====================================================
+    // FORMATTERS
+    // =====================================================
+    const euroFmt     = new Intl.NumberFormat('en-IE', { style:'currency', currency:'EUR', maximumFractionDigits:0 });
+    const numFmt      = new Intl.NumberFormat('en-IE', { maximumFractionDigits:0 });
+    const pctFmt      = new Intl.NumberFormat('en-IE', { style:'percent', maximumFractionDigits:1 });
+    const pctFmtExact = new Intl.NumberFormat('en-IE', { style:'percent', minimumFractionDigits:2, maximumFractionDigits:2 });
+
+    let scenarioChartInstance = null;
+    let radarChartInstance    = null;
+
+    // =====================================================
+    // PHASE 2 DATA
+    // =====================================================
+    const INDUSTRY_BENCH = [1.8, 1.7, 1.6, 1.9, 1.7, 1.8, 1.6, 1.9, 1.7];
+    const LEADING_BENCH  = [3.8, 3.6, 3.7, 3.8, 3.7, 3.8, 3.5, 3.8, 3.7];
+
+    const PILLARS = [
+        {
+            id: 'q1', label: 'Subscription Strategy',
+            hint: 'How central is reader revenue to your business model?',
+            options: [
+                'Ad/grant-dependent. Subscriptions are an afterthought.',
+                'Basic subscriptions launched — lacks unified strategy or North Star goal.',
+                'Subscriptions are the primary engine. LTV drives editorial decisions.',
+                'Highly diversified recurring revenue embedded in culture and KPIs.'
+            ],
+            what: [
+                'Your model depends on advertising or grants. Reader revenue hasn\'t been defined as a strategic priority — making your newsroom highly vulnerable to funding cuts.',
+                'You\'ve taken the first step, but subscriptions lack a clear goal (North Star), a dedicated owner, and shared KPIs across teams. Growth is likely slow.',
+                'Subscriptions drive decisions. You\'re measuring LTV, and editorial choices increasingly serve retention. This is the inflection point where most top publishers accelerated.',
+                'You operate a full reader revenue culture — from editorial to commercial. Recurring income is diversified across multiple formats and deeply embedded in how you work.'
+            ],
+            next: [
+                'Hold a leadership session to align all teams on a single North Star subscriber goal. Define one shared KPI company-wide.',
+                'Appoint a Reader Revenue Lead. Set a 12-month subscriber target and replace pageview goals with engagement and retention metrics.',
+                'Start modelling LTV by audience segment. Identify your top 20% highest-LTV subscribers and what content keeps them engaged.',
+                'Document and share your model with the industry — and explore consultancy, licensing, or events as extensions of your subscriber proposition.'
+            ]
+        },
+        {
+            id: 'q8', label: 'Revenue Diversification',
+            hint: 'How many active, meaningful revenue streams does your newsroom operate?',
+            options: [
+                '100% reliant on a single revenue stream (advertising or grants).',
+                'Two active streams, heavily skewed to one. Reader revenue is marginal.',
+                'Balanced between reader revenue and advertising or sponsorships.',
+                'Highly diversified: subscriptions, ads, events, syndication, consultancy, grants.'
+            ],
+            what: [
+                'A single revenue stream is an existential risk. One platform change, grant cycle ending, or advertising decline can collapse your income overnight.',
+                'You have some diversification but one stream dominates. If it fails, the other won\'t sustain you. The gap to close is making reader revenue meaningful — not marginal.',
+                'You\'ve achieved the core balance leading newsrooms target. Focus now shifts to deepening reader revenue and identifying high-margin ancillary streams.',
+                'You are structurally resilient. Sustainable newsrooms consistently draw from 3+ streams. Your task is optimising profitability and margin across each.'
+            ],
+            next: [
+                'Identify your most commercially valuable editorial niche and design one new revenue product around it — events, briefings, or sponsored research.',
+                'Give reader revenue a 12-month target to reach 30% of total revenue. Treat it as a first-class P&L item with its own budget and owner.',
+                'Explore high-margin ancillary streams: paid events, B2B data services, content licensing, or membership tiers. Research shows these often outperform advertising per effort.',
+                'Run a quarterly revenue stream profitability review. Cut or restructure low-margin streams and reinvest in those with the best LTV:CAC ratios.'
+            ]
+        },
+        {
+            id: 'q2', label: 'Data Infrastructure & RFV',
+            hint: 'Can you track Recency, Frequency and Volume of engagement per subscriber?',
+            options: [
+                'Siloed data. No central reader view. Analytics = raw pageviews only.',
+                'Manual reporting via CSV exports. Newsletter and payments tracked separately.',
+                'Unified data warehouse or CDP updating automatically. RFV scoring in use.',
+                'Real-time data platform powering instant algorithmic decisions across all teams.'
+            ],
+            what: [
+                'Without a unified reader view, you\'re flying blind. You can\'t identify who is at risk of churning, who is most likely to subscribe, or which content drives the most value.',
+                'Manual data creates delay and bottlenecks. Decisions are always made on stale information — you\'re reacting to what happened weeks ago, not what\'s happening now.',
+                'You have the foundation that powers leading subscription businesses. RFV scoring lets you act proactively: reward loyal readers, rescue at-risk ones, and target likely converters.',
+                'Real-time signals mean your system can act without human intervention — triggering personalised offers, churn-save flows, and content curation automatically.'
+            ],
+            next: [
+                'Connect your newsletter, CMS, and payments into even a basic shared spreadsheet. Start tracking 5 subscribers manually to understand what engaged vs. disengaged looks like.',
+                'Prioritise 2–3 key integrations: your email platform to your subscription billing, and both to Google Analytics or a simple BI tool. Even Zapier connections are a valid first step.',
+                'Expand RFV scoring to drive automated actions: send a win-back sequence when RFV drops 30%; trigger a special offer when score reaches your conversion threshold.',
+                'Document your real-time decision logic and review it quarterly. As AI tools mature, explore adding propensity-to-subscribe modelling on top of your RFV foundation.'
+            ]
+        },
+        {
+            id: 'q3', label: 'Acquisition & Conversion',
+            hint: 'How sophisticated is your paywall and conversion approach?',
+            options: [
+                'One static paywall or donation ask for all users. No segmentation.',
+                'Metered paywall in place. Some manual A/B testing and basic segmentation.',
+                'Dynamic paywalls based on user behaviour and engagement signals.',
+                'AI-driven propensity modelling dictating personalised pricing and access.'
+            ],
+            what: [
+                'A static paywall treats your most loyal reader the same as a first-time visitor — a significant revenue leak. It captures the most motivated subscribers but loses everyone else.',
+                'A meter is a major step forward — you\'re now rewarding light readers with free access while nudging frequent readers to pay. The data you\'re building here is valuable.',
+                'Dynamic paywalls are used by the fastest-growing subscription publishers. You\'re serving each reader the right ask at the right moment — this materially moves conversion rates.',
+                'You\'ve reached the frontier of conversion optimisation. Your system identifies who is most likely to subscribe before they do — and adjusts the offer accordingly.'
+            ],
+            next: [
+                'Move to a metered paywall allowing 5–10 free articles per month. This single change is the highest-leverage conversion upgrade available to Stage 1 publishers.',
+                'Identify your 3 highest-converting article types and use them as conversion triggers. A/B test mission-based vs. value-based vs. scarcity messaging on your paywall prompt.',
+                'Introduce engagement-based segmentation: show a harder wall to readers who have visited 10+ times. Test offering a free trial or gift article to medium-engaged readers.',
+                'Review your propensity model monthly against actual conversion data. Explore price personalisation — offering lower price points to price-sensitive segments rather than free access.'
+            ]
+        },
+        {
+            id: 'q4', label: 'Churn Management',
+            hint: 'How actively do you prevent cancellations? Industry average is 4–5% per month.',
+            options: [
+                'Unmanaged. Users cancel without any intervention or save attempt.',
+                'Basic automated dunning only (failed payment retries). No engagement-based intervention.',
+                'Proactive intervention triggered by engagement drops and RFV score decline.',
+                'Predictive churn forecasting triggering automated, personalised save flows.'
+            ],
+            what: [
+                'With no churn management, you\'re losing subscribers entirely preventably. A portion of every cancellation is recoverable — without it, growth requires ever-faster acquisition just to stay flat.',
+                'Dunning recovers involuntary churn (failed payments) — typically 20–40% of that cohort. But voluntary churn (readers who actively cancel) remains entirely unaddressed.',
+                'Proactive retention is where the biggest churn wins live. Catching a disengaging subscriber before they cancel is significantly easier and cheaper than winning them back after.',
+                'Predictive churn is the gold standard. You\'re intervening before readers know they\'re going to leave — and tailoring the save attempt to their specific behaviour pattern.'
+            ],
+            next: [
+                'Set up a cancel flow immediately: when a subscriber clicks cancel, show them a pause option, a discounted offer, or a one-question survey. This alone can recover 10–20% of churners.',
+                'Add a win-back email sequence for subscribers who cancelled in the last 90 days. Offer a personalised return incentive tied to content they previously engaged with most.',
+                'Automate a 30-day inactivity trigger: any subscriber who hasn\'t opened an email or visited in 30 days gets a personalised re-engagement sequence before their renewal date.',
+                'Review your churn prediction model\'s accuracy monthly. Ensure save flows are personalised by churn reason (disengagement vs. price sensitivity vs. content dissatisfaction).'
+            ]
+        },
+        {
+            id: 'q5', label: 'Personalisation & Engagement',
+            hint: 'Do subscribers receive differentiated experiences based on their behaviour?',
+            options: [
+                'One-size-fits-all newsletter and homepage for every reader.',
+                'Basic onboarding email series for new subscribers. No ongoing segmentation.',
+                'RFV scoring active. Highly segmented content curation and newsletter tracks.',
+                '1-to-1 content orchestration across all channels, driven by real-time signals.'
+            ],
+            what: [
+                'Sending the same content to every reader — regardless of what they care about — is the fastest path to disengagement and churn. High-churn publishers almost universally lack personalisation.',
+                'An onboarding sequence is the right foundation. But without ongoing personalisation, subscribers settle into passive consumption and disengage quietly before renewing.',
+                'Segmented newsletters meaningfully improve RFV scores and reduce churn. Readers who get content matched to their interests open more, stay longer, and are 3× less likely to cancel.',
+                'True 1-to-1 personalisation is a competitive moat. It makes every touchpoint feel bespoke — dramatically increasing the perceived value of a subscription.'
+            ],
+            next: [
+                'Start with the simplest possible segmentation: ask subscribers one question (their primary topic interest) and create two versions of your newsletter. Measure open rate differences.',
+                'Introduce an automated 30-day post-signup engagement sequence. Check in, surface your best work in their interest area, and ask them what they want more of.',
+                'Build a monthly "subscriber health" review. Identify your bottom 20% by RFV and send them a dedicated re-engagement campaign with your highest-rated content in their interest area.',
+                'Audit your personalisation signals quarterly. Add new data inputs (time of day, format preferences, device) and test whether they meaningfully improve engagement versus your current model.'
+            ]
+        },
+        {
+            id: 'q9', label: 'Cost & Workflow Efficiency',
+            hint: 'Are editorial processes lean, documented, and automated where possible?',
+            options: [
+                'Entirely manual. Staff are stretched thin. Burnout is a structural risk.',
+                'Some workflow documentation exists, but little automation or AI use.',
+                'Lean processes established. Non-core tasks outsourced. AI tools actively used.',
+                'AI and automation handle the majority of repetitive administrative tasks at scale.'
+            ],
+            what: [
+                'Manual-only operations mean your team is spending time on tasks that don\'t require human judgement — time that should go to journalism, audience engagement, and strategy.',
+                'You have documentation but not yet the systems to enforce it consistently. AI and automation remain unexplored opportunities that could free significant editorial capacity.',
+                'Lean operations with AI augmentation is the model sustainable publishers are converging on. You\'re freeing editorial time for the highest-value journalism and audience work.',
+                'You\'ve reached operational efficiency that most newsrooms will take years to reach. Your task is staying current with fast-moving AI tools and ensuring human judgement remains central to editorial decisions.'
+            ],
+            next: [
+                'Audit one week of your team\'s time. Categorise every task: journalism, editorial strategy, administration, distribution. Any administration taking 20%+ of time is an automation target.',
+                'Implement AI tools for the 3 highest-frequency non-editorial tasks: transcription, social post formatting, SEO metadata. These typically save 3–5 hours per journalist per week.',
+                'Write SOPs for your 5 most repeated editorial processes. Use them to train new team members faster and identify where the next round of automation can be applied.',
+                'Create a quarterly AI tool review. Assign one person to monitor new tools relevant to your workflows. The landscape is changing fast — early adoption is a competitive advantage.'
+            ]
+        },
+        {
+            id: 'q6', label: 'Organisation & Culture',
+            hint: 'Is reader revenue a shared organisational priority, or a siloed commercial concern?',
+            options: [
+                'Editorial optimises for pageviews. Commercial is entirely separate.',
+                'Subscription targets exist, but KPIs remain mixed and misaligned across teams.',
+                'Cross-functional squad dedicated to reader revenue with shared metrics.',
+                'Completely subscriber-first. Every editorial decision is guided by LTV and engagement data.'
+            ],
+            what: [
+                'A pageview culture systematically undermines subscription growth — it incentivises clickbait over depth, volume over loyalty, and short-term traffic over long-term reader value.',
+                'Misaligned KPIs mean different teams are optimising for different things. Editorial wants traffic, commercial wants revenue, and subscriptions fall between the cracks.',
+                'A cross-functional reader revenue squad is the structural innovation that separates Stage 3 from Stage 2. When everyone shares the metric, everyone works to move it.',
+                'Subscriber-first culture is the end state. It\'s not just a team structure — it\'s an editorial philosophy where what\'s good for subscribers and what\'s good for journalism are the same thing.'
+            ],
+            next: [
+                'Replace pageview targets with engagement and retention KPIs for editorial teams. Show your team data on which articles drive subscriptions and which drive churn.',
+                'Hold a monthly "subscriber health" all-hands — open to every member of staff, not just leadership. Shared visibility creates shared accountability.',
+                'Give your Reader Revenue Lead explicit authority across editorial, product, and marketing. Without cross-functional mandate, the squad becomes advisory and loses effectiveness.',
+                'Publish an annual Reader Report — internal or external — setting out what your subscribers value most, how you serve them, and what you\'re building next. This is cultural reinforcement at scale.'
+            ]
+        },
+        {
+            id: 'q7', label: 'Technology & Capabilities',
+            hint: 'How integrated is your subscription billing, CRM, and analytics stack?',
+            options: [
+                'Basic payment link only (Patreon/Stripe). No CRM. Marketing can\'t self-serve.',
+                'Dedicated billing tool, but disconnected from newsletter CRM and analytics.',
+                'Integrated platform. Marketing can run experiments without engineering support.',
+                'Enterprise composable stack with native machine learning and real-time decisioning.'
+            ],
+            what: [
+                'A standalone payment link gives you revenue but no insight. You can\'t see who\'s about to churn, who\'s about to convert, or what content drove your last 10 sign-ups.',
+                'Disconnected tools mean your data is siloed, your marketing team can\'t act on signals, and every experiment requires engineering time. This bottleneck compounds over time.',
+                'Integration is what transforms a subscription product into a subscription business. When marketing can self-serve experiments, you move faster, test more, and learn more.',
+                'A composable stack with ML is a genuine competitive moat — but its value depends entirely on the quality of data flowing into it and the clarity of the decisions you\'re trying to automate.'
+            ],
+            next: [
+                'Map your current tools and identify the 2–3 critical integrations missing. As a minimum: payments → email platform → analytics. Even webhook-based integrations are transformative.',
+                'Evaluate dedicated subscription management platforms (Piano, Zuora, Pico, Pelcro, Memberful) based on your audience size and technical capacity. The switch pays for itself in data quality.',
+                'Prioritise tools that give marketing self-serve A/B test capability — specifically paywall copy, offer design, and email triggers. Measure velocity of experiments per quarter as a KPI.',
+                'Conduct an annual stack review. Document every tool, its cost, its data output, and its integration status. Rationalise where possible — fewer, better-integrated tools outperform many siloed ones.'
+            ]
+        }
+    ];
+
+    const STAGE_DATA = {
+        1: {
+            label: 'Stage 1: Reactive',
+            color: 'var(--rose)',
+            pillColor: 'rgba(251,113,133,0.12)',
+            pillBorder: 'rgba(251,113,133,0.25)',
+            headline: 'Your newsroom is ad-dependent and subscription strategy is not yet a priority.',
+            meaning: 'At Stage 1, the organisation\'s financial model is built around advertising or grants — reader revenue exists only at the margins, if at all. There is no unified strategy for subscriptions, no shared KPIs, and no systematic approach to building a direct relationship with paying readers. This is the most common starting point globally — and also the most fragile, since a single revenue stream failure can threaten the entire operation.',
+            signals: [
+                { icon: '⚠', text: 'Revenue is overwhelmingly single-source: advertising, grants, or both' },
+                { icon: '⚠', text: 'No North Star metric — teams optimise for pageviews or grant deliverables' },
+                { icon: '⚠', text: 'Subscriber data is not tracked or used to drive editorial decisions' },
+                { icon: '⚠', text: 'Churn is unknown — subscribers leave without any intervention' }
+            ],
+            nextStep: 'Your single most important action is defining a North Star: a specific 12-month paid subscriber target that every team in the organisation knows about and works toward. This cultural shift — from pageviews to reader relationships — is the foundation everything else is built on.'
+        },
+        2: {
+            label: 'Stage 2: Emerging',
+            color: 'var(--amber)',
+            pillColor: 'rgba(251,191,36,0.1)',
+            pillBorder: 'rgba(251,191,36,0.25)',
+            headline: 'You\'ve started the pivot — but strategy, data, and culture are still fragmented.',
+            meaning: 'Stage 2 publishers have launched a subscription or membership product, but it operates in isolation. Strategy is often reactive, built around a single paywall or donation button with no systematic conversion approach. Data lives in spreadsheets. Different teams have different goals. Reader revenue is generating income, but it\'s not yet the engine driving editorial and commercial decisions. Most publishers get stuck here for years without a deliberate push to Stage 3.',
+            signals: [
+                { icon: '→', text: 'A subscription product exists but lacks a dedicated owner or strategy document' },
+                { icon: '→', text: 'Newsletter and payment data are tracked separately, not as a unified reader view' },
+                { icon: '→', text: 'Churn is partially managed — dunning exists, but proactive retention doesn\'t' },
+                { icon: '→', text: 'Paywall is static — all readers see the same ask regardless of engagement level' }
+            ],
+            nextStep: 'The gap between Stage 2 and Stage 3 is data and culture. Your two parallel priorities: connect your audience data into a single view (even a basic integration), and appoint a cross-functional Reader Revenue Lead with authority across editorial, product, and marketing.'
+        },
+        3: {
+            label: 'Stage 3: Advanced',
+            color: 'var(--blue)',
+            pillColor: 'rgba(96,165,250,0.1)',
+            pillBorder: 'rgba(96,165,250,0.25)',
+            headline: 'Subscriptions are your primary engine. You\'re operating a genuinely subscriber-first model.',
+            meaning: 'Stage 3 is where reader revenue becomes the dominant commercial force in the organisation. Subscriptions are measured by LTV, not just count. Editorial decisions are informed by what drives engagement and retention — not just traffic. RFV scoring is active, dynamic paywalls respond to behaviour, and a dedicated cross-functional squad owns the subscriber relationship. This is the stage where compounding growth begins: better data leads to better conversion, which leads to better retention, which funds better journalism.',
+            signals: [
+                { icon: '✓', text: 'RFV scoring is in place and used to segment newsletters and re-engagement campaigns' },
+                { icon: '✓', text: 'A dynamic or metered paywall adapts based on reader behaviour signals' },
+                { icon: '✓', text: 'Cross-functional reader revenue squad meets regularly with shared KPIs' },
+                { icon: '✓', text: 'Proactive churn intervention is triggered by engagement drops, not just failed payments' }
+            ],
+            nextStep: 'At Stage 3, the focus shifts from building the machine to tuning it. Your priorities are predictive churn modelling, deeper personalisation by audience segment, and exploring high-margin ancillary revenue streams that extend subscriber value — events, B2B tiers, or licensed content.'
+        },
+        4: {
+            label: 'Stage 4: Strategic',
+            color: 'var(--emerald)',
+            pillColor: 'rgba(52,211,153,0.08)',
+            pillBorder: 'rgba(52,211,153,0.25)',
+            headline: 'You operate a fully optimised reader revenue model. AI and data drive every decision.',
+            meaning: 'Stage 4 is the frontier. Predictive churn models identify subscribers at risk before they know they\'re leaving. AI-driven propensity scoring determines who to convert, at what price, and with what message. The composable tech stack allows marketing to run 10+ experiments per quarter without engineering involvement. Editorial acts on LTV data — investing more deeply in the topics and formats that drive the highest subscriber value. This is where the industry\'s most sustainable and profitable newsrooms operate.',
+            signals: [
+                { icon: '★', text: 'Predictive churn forecasting triggers automated, personalised save flows' },
+                { icon: '★', text: 'AI-driven propensity modelling dictates conversion offers and pricing in real time' },
+                { icon: '★', text: 'Editorial investment is explicitly linked to LTV data — topics, formats, and journalists are evaluated on subscriber value' },
+                { icon: '★', text: 'Revenue is highly diversified across 4+ streams, each with its own P&L and growth target' }
+            ],
+            nextStep: 'At Stage 4, your task is staying at the frontier. Conduct quarterly stack reviews, invest in responsible AI adoption, and — critically — share your model. The newsrooms at Stage 4 that thrive long-term are those that treat industry leadership as a competitive advantage, not just an internal achievement.'
+        }
+    };
+
+    // =====================================================
+    // BUILD QUESTIONNAIRE (dynamic)
+    // =====================================================
+    function buildForm() {
+        const form = document.getElementById('assessmentForm');
+        const dots = document.getElementById('progressDots');
+        PILLARS.forEach((p, i) => {
+            // Dot
+            const dot = document.createElement('div');
+            dot.className = 'pdot';
+            dot.id = `dot-${i}`;
+            dots.appendChild(dot);
+
+            // Question block
+            const block = document.createElement('div');
+            block.className = 'card p-5 transition-all duration-200';
+            block.style.borderColor = 'var(--border)';
+
+            const header = document.createElement('div');
+            header.className = 'flex items-start justify-between gap-2 mb-3';
+            header.innerHTML = `
+                <div>
+                    <label class="block text-sm font-semibold mb-0.5" style="color:var(--text)">${i+1}. ${p.label}</label>
+                    <p class="text-[11px]" style="color:var(--muted)">${p.hint}</p>
+                </div>
+                <span class="mono text-[10px] flex-shrink-0" style="color:var(--muted-2)">PILLAR ${String(i+1).padStart(2,'0')}</span>
+            `;
+            const sel = document.createElement('select');
+            sel.id = p.id;
+            sel.className = 'inp';
+            p.options.forEach((opt, vi) => {
+                const o = document.createElement('option');
+                o.value = vi + 1;
+                o.textContent = opt;
+                sel.appendChild(o);
+            });
+            sel.addEventListener('change', () => {
+                dot.classList.add('filled');
+                block.style.borderColor = 'rgba(171,65,60,0.3)';
+            });
+
+            block.appendChild(header);
+            block.appendChild(sel);
+            form.appendChild(block);
+        });
+    }
+    buildForm();
+
+    // =====================================================
+    // PHASE 1: FINANCIAL MODEL
+    // =====================================================
+    function updateSliders() {
+        const convPct   = parseFloat(document.getElementById('targetConvSlider').value);
+        const churnPct  = parseFloat(document.getElementById('targetChurnSlider').value);
+        const ownedNow  = parseFloat(document.getElementById('owned').value) || 0;
+        document.getElementById('targetConvDisplay').textContent  = convPct.toFixed(2) + '%';
+        document.getElementById('targetChurnDisplay').textContent = churnPct.toFixed(1) + '%';
+        // Live previews under each slider
+        const targetSubs = Math.round(ownedNow * (convPct / 100));
+        document.getElementById('targetSubsPreview').textContent =
+            targetSubs > 0 ? numFmt.format(targetSubs) + ' subs' : '—';
+        const lifetime = churnPct > 0 ? (1 / (churnPct / 100)) : 0;
+        document.getElementById('targetLifetimePreview').textContent =
+            lifetime > 0 ? lifetime.toFixed(1) + ' mo avg' : '—';
+        calculateModel();
+    }
+
+    let donutChartInstance = null;
+
+    function calculateModel() {
+        const uu       = parseFloat(document.getElementById('uu').value)       || 0;
+        const ru       = parseFloat(document.getElementById('ru').value)       || 0;
+        const owned    = parseFloat(document.getElementById('owned').value)    || 0;
+        const subs     = parseFloat(document.getElementById('subs').value)     || 0;
+        const arpu     = parseFloat(document.getElementById('arpu').value)     || 0;
+        const churnPct = parseFloat(document.getElementById('churn').value)    || 0;
+        const churn    = churnPct / 100;
+        const newsCost = parseFloat(document.getElementById('newsCost').value) || 0;
+        const platFee  = (parseFloat(document.getElementById('platFee').value) || 0) / 100;
+        const otherRev = parseFloat(document.getElementById('otherRev').value) || 0;
+        const targetConv  = parseFloat(document.getElementById('targetConvSlider').value) / 100;
+        const targetChurn = parseFloat(document.getElementById('targetChurnSlider').value) / 100;
+
+        // ---- Funnel ----
+        document.getElementById('overallConv').textContent = pctFmtExact.format(owned > 0 ? subs / owned : 0);
+        document.getElementById('f-uu').textContent    = numFmt.format(uu);
+        document.getElementById('f-ru').textContent    = numFmt.format(ru);
+        document.getElementById('f-owned').textContent = numFmt.format(owned);
+        document.getElementById('f-subs').textContent  = numFmt.format(subs);
+        document.getElementById('r-uu-ru').textContent    = uu > 0 ? pctFmt.format(ru / uu) : '0%';
+        document.getElementById('r-ru-owned').textContent = ru > 0 ? pctFmt.format(owned / ru) : '0%';
+
+        // ---- Revenue breakdown ----
+        const readerRevGross = subs * arpu * 12;         // Annual gross reader revenue
+        const taxLost        = readerRevGross * platFee; // Annual platform fee
+        const readerRevNet   = readerRevGross - taxLost; // Net reader revenue after fees
+        const totalNetRev    = readerRevNet + otherRev;  // Total net revenue
+
+        // ---- Sustainability ----
+        // Coverage = total net revenue (reader + other) vs newsroom cost
+        const coverage = newsCost > 0 ? totalNetRev / newsCost : 0;
+        const covEl = document.getElementById('coveragePercent');
+        covEl.textContent = pctFmt.format(coverage);
+        const col = coverage >= 1 ? 'var(--emerald)' : coverage >= 0.5 ? 'var(--amber)' : 'var(--rose)';
+        covEl.style.color = col;
+        document.getElementById('coverageBar').style.width      = `${Math.min(coverage, 1) * 100}%`;
+        document.getElementById('coverageBar').style.background = col;
+
+        // ---- Revenue mix panel ----
+        const readerPct = totalNetRev > 0 ? readerRevNet / totalNetRev : 0;
+        document.getElementById('readerPct').textContent  = pctFmt.format(readerPct);
+        document.getElementById('readerRevAmt').textContent = euroFmt.format(readerRevNet);
+        document.getElementById('otherRevAmt').textContent  = euroFmt.format(otherRev);
+        document.getElementById('totalRevAmt').textContent  = euroFmt.format(totalNetRev);
+        // ---- MRR + LTV ----
+        const mrr = readerRevNet / 12;
+        const ltv = churn > 0 ? arpu * (1 - platFee) / churn : 0;
+        document.getElementById('mrrAmt').textContent = euroFmt.format(mrr);
+        document.getElementById('ltvAmt').textContent = euroFmt.format(ltv);
+        document.getElementById('taxAmt').textContent = euroFmt.format(taxLost);
+
+        // ---- Donut chart ----
+        renderDonut(readerRevNet, otherRev);
+
+        // ---- 12-month trajectory (reader revenue only, net of platform fees) ----
+        // Monthly reader cost target (reader rev contribution to breakeven)
+        const readerBreakeven = Math.max(0, newsCost - otherRev) / 12;
+
+        // Status quo: subscribers stabilise at churn equilibrium
+        // Net new = acquired - churned. Assume acquired = subs * churn (steady state)
+        // So sqSubs stays flat. This is correct: status quo = no growth in subs.
+        const sqMonthlyReaderRev = subs * arpu * (1 - platFee); // flat every month
+
+        // Optimised: grow subs by converting owned audience to targetConv rate
+        // AND reduce churn to targetChurn
+        // New subs target = owned * targetConv
+        // Monthly growth in subs (linear ramp over 12 months)
+        const targetSubsCount = owned * targetConv;
+        const monthlyNewSubs  = Math.max(0, (targetSubsCount - subs) / 12);
+
+        let labels = [], sqData = [], bestData = [];
+        let sqSubs = subs, bestSubs = subs;
+        let totalSqRR = 0, totalBestRR = 0;
+
+        for (let i = 1; i <= 12; i++) {
+            labels.push(`M${i}`);
+
+            // Status quo: stable subscriber base (acquisitions ≈ churns)
+            const sqRev = sqSubs * arpu * (1 - platFee);
+            sqData.push(sqRev);
+            totalSqRR += sqRev;
+
+            // Optimised: grow subs, reduce churn
+            bestSubs = bestSubs + monthlyNewSubs - (bestSubs * targetChurn);
+            const bestRev = bestSubs * arpu * (1 - platFee);
+            bestData.push(bestRev);
+            totalBestRR += bestRev;
+        }
+
+        document.getElementById('unlockedRev').textContent = euroFmt.format(Math.max(0, totalBestRR - totalSqRR));
+        // Refresh slider previews (so they're correct on initial load too)
+        const _conv  = parseFloat(document.getElementById('targetConvSlider').value);
+        const _churn = parseFloat(document.getElementById('targetChurnSlider').value);
+        const _ts    = Math.round(owned * (_conv / 100));
+        document.getElementById('targetSubsPreview').textContent     = _ts > 0 ? numFmt.format(_ts) + ' subs' : '—';
+        const _lt = _churn > 0 ? (1 / (_churn / 100)) : 0;
+        document.getElementById('targetLifetimePreview').textContent = _lt > 0 ? _lt.toFixed(1) + ' mo avg' : '—';
+        renderLineChart(labels, sqData, bestData, readerBreakeven);
+    }
+
+    function renderDonut(readerRevNet, otherRev) {
+        const ctx = document.getElementById('donutChart').getContext('2d');
+        if (donutChartInstance) donutChartInstance.destroy();
+        const total = readerRevNet + otherRev;
+        donutChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: total > 0 ? [readerRevNet, otherRev] : [1, 1],
+                    backgroundColor: ['rgba(171,65,60,0.85)', 'rgba(255,255,255,0.1)'],
+                    borderColor: ['rgba(171,65,60,1)', 'rgba(255,255,255,0.06)'],
+                    borderWidth: 1,
+                    hoverOffset: 3
+                }]
+            },
+            options: {
+                responsive: false,
+                cutout: '68%',
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                animation: { duration: 600 }
+            }
+        });
+    }
+
+    function renderLineChart(labels, sqData, bestData, target) {
+        const ctx = document.getElementById('scenarioChart').getContext('2d');
+        if (scenarioChartInstance) scenarioChartInstance.destroy();
+        scenarioChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Optimised', data: bestData, borderColor: 'rgba(171,65,60,1)', backgroundColor: 'rgba(171,65,60,0.08)', borderWidth: 2.5, fill: true, tension: 0.35, pointRadius: 2 },
+                    { label: 'Status Quo', data: sqData, borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderDash: [5,5], fill: false, tension: 0.35, pointRadius: 0 },
+                    { label: 'Breakeven', data: Array(12).fill(target), borderColor: 'rgba(52,211,153,0.5)', borderWidth: 1.5, borderDash: [8,4], pointRadius: 0, fill: false }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { color: 'rgba(138,129,120,0.8)', callback: v => '€'+(v/1000).toFixed(0)+'k', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    x: { ticks: { color: 'rgba(138,129,120,0.8)', font: { family: 'DM Mono', size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // =====================================================
+    // PHASE 2: DIAGNOSTIC
+    // =====================================================
+    function getScores() {
+        return PILLARS.map(p => parseInt(document.getElementById(p.id).value));
+    }
+
+    function generateDiagnostic() {
+        const scores = getScores();
+        document.getElementById('radarPlaceholder').style.opacity = '0';
+        document.getElementById('radarPlaceholder').style.pointerEvents = 'none';
+
+        drawRadar(scores);
+
+        const results = document.getElementById('radarResults');
+        results.classList.remove('opacity-0');
+        results.classList.add('opacity-100');
+
+        const gate = document.getElementById('leadGenGate');
+        gate.style.opacity = '1';
+        gate.style.pointerEvents = 'auto';
+
+        document.getElementById('radarContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function handleGateSubmit(e) {
+        // Validate email
+        const emailEl = document.getElementById('mce-EMAIL');
+        if (!emailEl.checkValidity()) { emailEl.reportValidity(); return false; }
+        // Let the form POST to Mailchimp in the hidden iframe (no page redirect)
+        // Immediately run local unlock logic
+        unlockResults();
+        return true;
+    }
+
+    function unlockResults() {
+        const gate = document.getElementById('leadGenGate');
+        gate.style.opacity = '0';
+        gate.style.pointerEvents = 'none';
+
+        const results = document.getElementById('radarResults');
+        results.classList.remove('blur-gate');
+        results.classList.add('gate-removed');
+
+        const scores = getScores();
+        buildPillarAccordion(scores);
+        buildRecommendations(scores);
+        highlightStageBar(scores);
+
+        const post = document.getElementById('postResults');
+        post.classList.remove('hidden');
+        setTimeout(() => post.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+    }
+
+    function drawRadar(scores) {
+        const avg = scores.reduce((a,b) => a+b) / scores.length;
+        const stageNum = avg < 1.75 ? 1 : avg < 2.5 ? 2 : avg < 3.25 ? 3 : 4;
+        const sd = STAGE_DATA[stageNum];
+
+        // Stage pill
+        const pill = document.getElementById('stagePill');
+        pill.style.background = sd.pillColor;
+        pill.style.borderColor = sd.pillBorder;
+        const dot = document.getElementById('stageDot');
+        dot.style.background = sd.color;
+
+        // Text content
+        document.getElementById('stageResult').textContent = sd.label;
+        document.getElementById('stageResult').style.color = sd.color;
+        document.getElementById('stageHeadline').textContent = sd.headline;
+        document.getElementById('stageMeaning').textContent = sd.meaning;
+        document.getElementById('avgScoreDisplay').textContent = avg.toFixed(2);
+        document.getElementById('avgScoreDisplay2').textContent = avg.toFixed(2);
+        document.getElementById('stageNextStepText').textContent = sd.nextStep;
+
+        // Signals
+        const signalsEl = document.getElementById('stageSignals');
+        signalsEl.innerHTML = sd.signals.map(s => `
+            <div class="flex items-start gap-2.5">
+                <span class="flex-shrink-0 text-sm" style="color:${sd.color};margin-top:1px">${s.icon}</span>
+                <p class="text-[11px] leading-snug" style="color:var(--muted)">${s.text}</p>
+            </div>
+        `).join('');
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        if (radarChartInstance) radarChartInstance.destroy();
+        radarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Sub\nStrategy','Revenue\nDiversif.','Data &\nRFV','Acquisition','Churn\nMgmt','Personalise','Workflow','Culture','Tech'],
+                datasets: [
+                    { label:'Leading', data: LEADING_BENCH, backgroundColor:'rgba(52,211,153,0.04)', borderColor:'rgba(52,211,153,0.35)', borderDash:[3,3], pointRadius:2, pointBackgroundColor:'rgba(52,211,153,0.5)', borderWidth:1 },
+                    { label:'Industry', data: INDUSTRY_BENCH, backgroundColor:'rgba(251,191,36,0.04)', borderColor:'rgba(251,191,36,0.35)', borderDash:[5,5], pointRadius:2, pointBackgroundColor:'rgba(251,191,36,0.5)', borderWidth:1 },
+                    { label:'You', data: scores, backgroundColor:'rgba(171,65,60,0.18)', borderColor:'rgba(171,65,60,0.9)', pointBackgroundColor:'#fff', pointBorderColor:'rgba(171,65,60,0.9)', pointRadius:4, borderWidth:2.5 }
+                ]
+            },
+            options: {
+                responsive:true, maintainAspectRatio:false,
+                scales: { r: { min:0, max:4, angleLines:{color:'rgba(255,255,255,0.05)'}, grid:{color:'rgba(255,255,255,0.05)'}, pointLabels:{color:'rgba(138,129,120,0.9)',font:{family:'DM Mono',size:9}}, ticks:{display:false} } },
+                plugins: { legend:{display:false} }
+            }
+        });
+    }
+
+    function highlightStageBar(scores) {
+        const avg = scores.reduce((a,b) => a+b) / scores.length;
+        const stageNum = avg < 1.75 ? 1 : avg < 2.5 ? 2 : avg < 3.25 ? 3 : 4;
+        const cards = document.querySelectorAll('#stageBar .stage-card');
+        cards.forEach((c,i) => {
+            if (i === stageNum - 1) c.classList.add('active');
+        });
+    }
+
+    function getScoreColor(score) {
+        if (score >= 3.5) return { text:'var(--emerald)', bar:'rgba(52,211,153,0.9)' };
+        if (score >= 2.5) return { text:'var(--blue)',    bar:'rgba(96,165,250,0.9)' };
+        if (score >= 1.75) return { text:'var(--amber)',  bar:'rgba(251,191,36,0.9)' };
+        return { text:'var(--rose)', bar:'rgba(251,113,133,0.9)' };
+    }
+
+    function buildPillarAccordion(scores) {
+        const acc = document.getElementById('pillarAccordion');
+        acc.innerHTML = '';
+
+        PILLARS.forEach((p, i) => {
+            const score = scores[i];
+            const bench = INDUSTRY_BENCH[i];
+            const leading = LEADING_BENCH[i];
+            const c = getScoreColor(score);
+            const scoreIdx = score - 1; // 0-based for arrays
+            const gap = score - bench;
+            const gapStr = gap >= 0 ? `+${gap.toFixed(1)} vs median` : `${gap.toFixed(1)} vs median`;
+            const gapColor = gap >= 0 ? 'var(--emerald)' : 'var(--rose)';
+            const stageLabel = score < 1.75 ? 'Stage 1' : score < 2.5 ? 'Stage 2' : score < 3.25 ? 'Stage 3' : 'Stage 4';
+            const pct = (score / 4) * 100;
+            const benchPct = (bench / 4) * 100;
+            const leadingPct = (leading / 4) * 100;
+
+            const row = document.createElement('div');
+            row.className = 'pillar-row';
+
+            row.innerHTML = `
+                <div class="pillar-header" onclick="togglePillar(this)">
+                    <!-- Pillar number -->
+                    <span class="mono text-[11px] flex-shrink-0" style="color:var(--muted-2);min-width:20px">${String(i+1).padStart(2,'0')}</span>
+                    
+                    <!-- Name -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3 mb-2.5">
+                            <p class="text-sm font-semibold" style="color:var(--text)">${p.label}</p>
+                            <span class="mono text-[10px]" style="color:var(--muted-2)">${stageLabel}</span>
+                            <span class="mono text-[10px]" style="color:${gapColor}">${gapStr}</span>
+                        </div>
+                        <!-- Bar -->
+                        <div class="score-bar-track w-full">
+                            <!-- Leading ghost -->
+                            <div style="position:absolute;top:0;left:0;width:${leadingPct}%;height:5px;border-radius:999px;background:rgba(52,211,153,0.12);"></div>
+                            <!-- Industry marker -->
+                            <div class="bench-marker" style="left:${benchPct}%;background:rgba(251,191,36,0.7);"></div>
+                            <!-- Your bar -->
+                            <div class="score-bar-you" style="width:${pct}%;background:${c.bar}"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Score -->
+                    <span class="text-lg font-bold flex-shrink-0" style="color:${c.text};min-width:28px;text-align:right">${score}.0</span>
+                    
+                    <!-- Caret -->
+                    <svg class="pillar-caret w-4 h-4 flex-shrink-0" style="color:var(--muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="pillar-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <p class="mono text-[10px] font-bold mb-2" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em">What your score means</p>
+                            <p class="text-sm leading-relaxed" style="color:var(--muted)">${p.what[scoreIdx]}</p>
+                        </div>
+                        <div style="border-left:1px solid var(--border);padding-left:20px;">
+                            <p class="mono text-[10px] font-bold mb-2" style="color:var(--red);text-transform:uppercase;letter-spacing:.08em">Recommended next step</p>
+                            <p class="text-sm leading-relaxed" style="color:var(--text)">${p.next[scoreIdx]}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-5 mt-4 pt-4" style="border-top:1px solid var(--border);">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-1 rounded inline-block" style="background:${c.bar}"></span>
+                            <span class="text-[10px]" style="color:var(--muted)">You: <strong style="color:var(--text)">${score}.0</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-3.5 rounded inline-block" style="background:rgba(251,191,36,0.7)"></span>
+                            <span class="text-[10px]" style="color:var(--muted)">Industry avg: <strong style="color:var(--text)">${bench.toFixed(1)}</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-0.5 rounded inline-block" style="background:rgba(52,211,153,0.4)"></span>
+                            <span class="text-[10px]" style="color:var(--muted)">Leading publishers: <strong style="color:var(--text)">${leading.toFixed(1)}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            acc.appendChild(row);
+        });
+    }
+
+    function togglePillar(header) {
+        const row  = header.parentElement;
+        const body = row.querySelector('.pillar-body');
+        const isOpen = row.classList.contains('open');
+        // Close all
+        document.querySelectorAll('.pillar-row.open').forEach(r => {
+            r.classList.remove('open');
+            r.querySelector('.pillar-body').classList.remove('open');
+        });
+        // Open clicked (if wasn't open)
+        if (!isOpen) {
+            row.classList.add('open');
+            body.classList.add('open');
+        }
+    }
+
+    function buildRecommendations(scores) {
+        const grid = document.getElementById('recGrid');
+        grid.innerHTML = '';
+        const indexed = PILLARS.map((p,i) => ({ p, score:scores[i] })).sort((a,b) => a.score - b.score);
+        const top3 = indexed.slice(0,3);
+        const priorities = ['Priority 1 — Critical', 'Priority 2 — High Impact', 'Priority 3 — Important'];
+        const pColors = ['var(--rose)', 'var(--amber)', 'var(--blue)'];
+        const cardClass = ['priority-1','priority-2','priority-3'];
+
+        top3.forEach((item, idx) => {
+            const p = item.p;
+            const scoreIdx = item.score - 1;
+            const card = document.createElement('div');
+            card.className = `rec-card ${cardClass[idx]}`;
+            card.innerHTML = `
+                <p class="mono text-[10px] font-bold mb-1" style="color:${pColors[idx]};text-transform:uppercase;letter-spacing:.08em">${priorities[idx]}</p>
+                <h4 class="text-base font-bold mb-4" style="color:var(--text)">${p.label}</h4>
+                <div class="card-inset p-3 mb-4">
+                    <p class="mono text-[9px] font-bold mb-1" style="color:var(--muted-2);text-transform:uppercase">Your score: ${item.score}.0 / 4.0</p>
+                    <p class="text-xs leading-relaxed" style="color:var(--text)">${p.what[scoreIdx]}</p>
+                </div>
+                <div>
+                    <p class="mono text-[9px] font-bold mb-2" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">Next action</p>
+                    <p class="text-sm leading-relaxed" style="color:var(--muted)">${p.next[scoreIdx]}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // =====================================================
+    // LISTENERS
+    // =====================================================
+    ['uu','ru','owned','subs','arpu','churn','newsCost','platFee','otherRev'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateModel);
+    });
+    document.getElementById('targetConvSlider').addEventListener('input', updateSliders);
+    document.getElementById('targetChurnSlider').addEventListener('input', updateSliders);
+    calculateModel();
+    </script>
+</body>
+</html>
