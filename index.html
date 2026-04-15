@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jnomics | Reader Revenue Sustainability Engine</title>
+    <title>Reader Revenue Sustainability Engine | Jnomics</title>
+    <meta name="description" content="Simulate your newsroom's financial trajectory and audit operational maturity against global industry benchmarks. Free diagnostic from Jnomics — media strategy consultants.">
+    <meta property="og:title" content="Reader Revenue Sustainability Engine | Jnomics">
+    <meta property="og:description" content="Simulate your financial trajectory. Audit your 9-pillar operational maturity. Get a personalised action plan — free.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.jnomics.media">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="robots" content="index, follow">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -160,9 +167,57 @@
         /* --- KPI card --- */
         .kpi { padding: 20px; }
         .kpi-val { font-size: 2.25rem; font-weight: 800; line-height: 1; }
+
+        /* --- Per-slider thumb colours --- */
+        #targetConvSlider::-webkit-slider-thumb   { background: var(--red); }
+        #targetNlConvSlider::-webkit-slider-thumb { background: var(--amber); box-shadow: 0 0 10px rgba(251,191,36,0.4); }
+        #targetChurnSlider::-webkit-slider-thumb  { background: var(--emerald); box-shadow: 0 0 10px rgba(52,211,153,0.35); }
+        #targetConvSlider::-webkit-slider-runnable-track   { background: rgba(171,65,60,0.2); }
+        #targetNlConvSlider::-webkit-slider-runnable-track { background: rgba(251,191,36,0.2); }
+        #targetChurnSlider::-webkit-slider-runnable-track  { background: rgba(52,211,153,0.2); }
+
+        /* --- Sticky mini-nav --- */
+        .sticky-nav { position: sticky; top: 0; z-index: 50; background: rgba(10,10,10,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+        .nav-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; color: var(--muted); border: 1px solid transparent; }
+        .nav-pill:hover { color: var(--text); border-color: var(--border-2); }
+        .nav-pill.active { color: var(--text); background: rgba(255,255,255,0.06); border-color: var(--border-2); }
+
+        /* --- How it works strip --- */
+        .how-step { flex: 1; min-width: 180px; }
+
+        /* --- Tooltip --- */
+        .tip { position: relative; cursor: help; }
+        .tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--black-3); border: 1px solid var(--border-2); color: var(--muted); font-size: 0.65rem; line-height: 1.4; padding: 5px 9px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 99; }
+        .tip:hover::after { opacity: 1; }
+
+        /* --- Input min fix --- */
+        input[type=number]::-webkit-inner-spin-button { opacity: 0.4; }
+
+        /* --- Scrollbar (webkit) --- */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+
+        /* --- Footer --- */
+        .site-footer { border-top: 1px solid var(--border); margin-top: 80px; padding: 40px 0; }
     </style>
 </head>
-<body class="min-h-screen pb-32">
+<body class="min-h-screen pb-0">
+
+    <!-- ======= STICKY NAV ======= -->
+    <nav class="sticky-nav">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-1.5">
+                <a href="#phase1" class="nav-pill active" id="nav1">
+                    <span class="mono text-[10px]" style="color:var(--muted-2)">01</span> Financial Simulator
+                </a>
+                <a href="#phase2" class="nav-pill" id="nav2">
+                    <span class="mono text-[10px]" style="color:var(--muted-2)">02</span> Maturity Diagnostic
+                </a>
+            </div>
+            <a href="https://www.jnomics.media/contact" class="btn-primary" style="padding:7px 16px;font-size:0.78rem;border-radius:6px;">Work with us ↗</a>
+        </div>
+    </nav>
 
     <!-- ======= HEADER ======= -->
     <header class="max-w-7xl mx-auto px-6 lg:px-8 pt-14 pb-12">
@@ -177,6 +232,25 @@
                 <span style="color:var(--red)">&amp; Maturity</span>
             </h1>
             <p class="text-lg leading-relaxed max-w-2xl" style="color:var(--muted)">Simulate your financial trajectory. Then run a 9-pillar diagnostic to reveal the operational bottlenecks preventing you from reaching it — scored against industry benchmarks.</p>
+
+            <!-- How it works -->
+            <div class="flex flex-wrap gap-8 mt-10 pt-10" style="border-top:1px solid var(--border)">
+                <div class="how-step">
+                    <div class="mono text-[11px] mb-2" style="color:var(--red)">STEP 01</div>
+                    <p class="text-sm font-semibold mb-1" style="color:var(--text)">Enter your numbers</p>
+                    <p class="text-[12px] leading-relaxed" style="color:var(--muted)">Audience, subscribers, revenue, costs. Takes 2 minutes.</p>
+                </div>
+                <div class="how-step">
+                    <div class="mono text-[11px] mb-2" style="color:var(--muted-2)">STEP 02</div>
+                    <p class="text-sm font-semibold mb-1" style="color:var(--text)">Simulate your growth levers</p>
+                    <p class="text-[12px] leading-relaxed" style="color:var(--muted)">Move the sliders to see 12-month revenue impact live.</p>
+                </div>
+                <div class="how-step">
+                    <div class="mono text-[11px] mb-2" style="color:var(--muted-2)">STEP 03</div>
+                    <p class="text-sm font-semibold mb-1" style="color:var(--text)">Run the maturity diagnostic</p>
+                    <p class="text-[12px] leading-relaxed" style="color:var(--muted)">9 pillars, benchmarked. Get a personalised action plan.</p>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -185,7 +259,7 @@
     <!-- ================================================ -->
     <!-- PHASE 1: FINANCIAL & FUNNEL SIMULATION           -->
     <!-- ================================================ -->
-    <div>
+    <div id="phase1">
         <div class="flex items-center gap-4 mb-8">
             <span class="mono text-xs" style="color:var(--muted-2)">01</span>
             <h2 class="text-xl font-bold" style="color:var(--text)">Financial & Funnel Simulation</h2>
@@ -200,15 +274,25 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Monthly Uniques <span style="color:var(--rose)">*</span></label>
-                        <input type="number" id="uu" value="500000" class="inp">
+                        <input type="number" id="uu" value="500000" min="0" class="inp">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Returning Users</label>
-                        <input type="number" id="ru" value="125000" class="inp">
+                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Returning Users <span style="color:var(--rose)">*</span></label>
+                        <input type="number" id="ru" value="125000" min="0" class="inp">
+                        <p class="text-[10px] mt-1" style="color:var(--muted-2)">Primary conversion pool — direct traffic path</p>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Owned Audience <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Email / TG</span></label>
-                        <input type="number" id="owned" value="25000" class="inp">
+                    <div style="border-top:1px solid var(--border);padding-top:14px;">
+                        <p class="mono text-[9px] font-bold mb-3" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em">Newsletter / Channel <span style="color:var(--muted-2);font-weight:400;text-transform:none;letter-spacing:0;">— optional</span></p>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">List size <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Email · TG · WhatsApp</span></label>
+                                <input type="number" id="owned" placeholder="0 — leave blank if none" min="0" class="inp">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Monthly new signups</label>
+                                <input type="number" id="monthlySignups" placeholder="0 — avg new signups per month" min="0" class="inp">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -219,16 +303,16 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Active Patrons / Subs <span style="color:var(--rose)">*</span></label>
-                        <input type="number" id="subs" value="1000" class="inp">
+                        <input type="number" id="subs" value="1000" min="0" class="inp">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">ARPU (€) <span style="color:var(--rose)">*</span></label>
-                            <input type="number" id="arpu" value="10" step="0.5" class="inp">
+                            <input type="number" id="arpu" value="10" min="0" step="0.5" class="inp">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Mo. Churn % <span style="color:var(--rose)">*</span></label>
-                            <input type="number" id="churn" value="8.0" step="0.1" class="inp">
+                            <input type="number" id="churn" value="8.0" min="0" max="100" step="0.1" class="inp">
                         </div>
                     </div>
                 </div>
@@ -240,56 +324,90 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Annual Newsroom Cost (€) <span style="color:var(--rose)">*</span></label>
-                        <input type="number" id="newsCost" value="350000" class="inp">
+                        <input type="number" id="newsCost" value="350000" min="0" class="inp">
                     </div>
                     <div>
                         <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Other Annual Revenue (€) <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Grants · Ads · Events</span></label>
-                        <input type="number" id="otherRev" value="380000" class="inp">
+                        <input type="number" id="otherRev" value="380000" min="0" class="inp">
                         <p class="text-[10px] mt-1" style="color:var(--muted-2)">Everything except reader subscriptions</p>
                     </div>
                     <div>
                         <label class="block text-[11px] font-semibold mb-1.5" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Platform Fee % <span class="tag tag-grey" style="font-size:.55rem;padding:1px 6px;">Patreon etc.</span></label>
-                        <input type="number" id="platFee" value="10" class="inp" style="color:var(--rose)">
+                        <input type="number" id="platFee" value="10" min="0" max="100" class="inp" style="color:var(--rose)">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Funnel -->
+        <!-- Funnel — dual path -->
         <div class="card p-6 mb-6 scroll-x">
-            <div class="flex items-center justify-between mb-6 min-w-[560px]">
+            <div class="flex items-center justify-between mb-2 min-w-[640px]">
                 <p class="mono text-[10px] font-bold" style="color:var(--muted);letter-spacing:.1em;text-transform:uppercase">Conversion Funnel</p>
-                <div class="card-inset px-3 py-1.5 flex items-center gap-2">
-                    <span class="mono text-[10px]" style="color:var(--muted)">Owned-to-Paid</span>
-                    <strong class="mono text-sm" style="color:var(--red)" id="overallConv">0.00%</strong>
+                <div class="flex items-center gap-3">
+                    <div class="card-inset px-3 py-1.5 flex items-center gap-2">
+                        <span class="mono text-[10px]" style="color:var(--muted)">Direct conv.</span>
+                        <strong class="mono text-sm" style="color:var(--red)" id="directConvDisplay">0.00%</strong>
+                    </div>
+                    <div class="card-inset px-3 py-1.5 flex items-center gap-2">
+                        <span class="mono text-[10px]" style="color:var(--muted)">NL target conv.</span>
+                        <strong class="mono text-sm" style="color:var(--amber)" id="nlConvDisplay">—</strong>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-start justify-center min-w-[560px] mt-2 pb-4">
-                <div class="funnel-step">
-                    <p class="text-[10px] font-bold mb-2" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">1. Uniques</p>
-                    <div class="card-inset px-4 py-3 inline-block min-w-[110px]">
-                        <p class="text-lg font-bold" id="f-uu" style="color:var(--text)">0</p>
+
+            <!-- PATH A: Direct -->
+            <div class="mb-3 min-w-[640px]">
+                <p class="mono text-[9px] font-bold mb-2 px-1" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em">Path A — Direct (traffic → returning → paid)</p>
+                <div class="flex items-start justify-center">
+                    <div class="funnel-step">
+                        <p class="text-[10px] font-bold mb-2" style="color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Uniques</p>
+                        <div class="card-inset px-3 py-2.5 inline-block min-w-[100px]">
+                            <p class="text-base font-bold" id="f-uu" style="color:var(--text)">0</p>
+                        </div>
+                    </div>
+                    <div class="funnel-connector"><div class="funnel-rate" id="r-uu-ru">0%</div></div>
+                    <div class="funnel-step">
+                        <p class="text-[10px] font-bold mb-2" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">Returning</p>
+                        <div style="background:rgba(171,65,60,0.08);border:1px solid rgba(171,65,60,0.2);" class="rounded-lg px-3 py-2.5 inline-block min-w-[100px]">
+                            <p class="text-base font-bold" id="f-ru" style="color:var(--text)">0</p>
+                        </div>
+                    </div>
+                    <div class="funnel-connector"><div class="funnel-rate" id="r-ru-subs" style="color:var(--red)">0%</div></div>
+                    <div class="funnel-step">
+                        <p class="text-[10px] font-bold mb-2" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.07em">Patrons</p>
+                        <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);" class="rounded-lg px-3 py-2.5 inline-block min-w-[100px]">
+                            <p class="text-base font-bold" id="f-subs" style="color:var(--text)">0</p>
+                        </div>
                     </div>
                 </div>
-                <div class="funnel-connector"><div class="funnel-rate" id="r-uu-ru">0%</div></div>
-                <div class="funnel-step">
-                    <p class="text-[10px] font-bold mb-2" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">2. Returning</p>
-                    <div style="background:rgba(171,65,60,0.08);border:1px solid rgba(171,65,60,0.2);" class="rounded-lg px-4 py-3 inline-block min-w-[110px]">
-                        <p class="text-lg font-bold" id="f-ru" style="color:var(--text)">0</p>
+            </div>
+
+            <!-- PATH B: Newsletter (conditional) -->
+            <div id="nlFunnelRow" class="min-w-[640px]" style="opacity:0.35;transition:opacity 0.3s;">
+                <p class="mono text-[9px] font-bold mb-2 px-1" style="color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em">
+                    Path B — Newsletter / Channel
+                    <span id="nlFunnelHint" class="font-normal" style="color:var(--muted-2);text-transform:none;letter-spacing:0;"> (enter list data above to activate)</span>
+                </p>
+                <div class="flex items-start justify-center">
+                    <div class="funnel-step">
+                        <p class="text-[10px] font-bold mb-2" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">List Size</p>
+                        <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);" class="rounded-lg px-3 py-2.5 inline-block min-w-[100px]">
+                            <p class="text-base font-bold" id="f-owned" style="color:var(--text)">—</p>
+                        </div>
                     </div>
-                </div>
-                <div class="funnel-connector"><div class="funnel-rate" id="r-ru-owned">0%</div></div>
-                <div class="funnel-step">
-                    <p class="text-[10px] font-bold mb-2" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">3. Owned</p>
-                    <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);" class="rounded-lg px-4 py-3 inline-block min-w-[110px]">
-                        <p class="text-lg font-bold" id="f-owned" style="color:var(--text)">0</p>
+                    <div class="funnel-connector"><div class="funnel-rate" id="r-nl-growth">—</div></div>
+                    <div class="funnel-step">
+                        <p class="text-[10px] font-bold mb-2" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">Mo. Signups</p>
+                        <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);" class="rounded-lg px-3 py-2.5 inline-block min-w-[100px]">
+                            <p class="text-base font-bold" id="f-nl-signups" style="color:var(--text)">—</p>
+                        </div>
                     </div>
-                </div>
-                <div class="funnel-connector"><div class="funnel-rate" style="color:var(--emerald)">Direct</div></div>
-                <div class="funnel-step">
-                    <p class="text-[10px] font-bold mb-2" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.07em">4. Patrons</p>
-                    <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);" class="rounded-lg px-4 py-3 inline-block min-w-[110px]">
-                        <p class="text-lg font-bold" id="f-subs" style="color:var(--text)">0</p>
+                    <div class="funnel-connector"><div class="funnel-rate" id="r-nl-conv" style="color:var(--amber)">—</div></div>
+                    <div class="funnel-step">
+                        <p class="text-[10px] font-bold mb-2" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.07em">New Paid / mo</p>
+                        <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);" class="rounded-lg px-3 py-2.5 inline-block min-w-[100px]">
+                            <p class="text-base font-bold" id="f-nl-newpaid" style="color:var(--emerald)">—</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -297,32 +415,49 @@
 
         <!-- Optimisation levers -->
         <div class="card p-6 mb-6" style="background:rgba(171,65,60,0.04);border-color:rgba(171,65,60,0.15)">
-            <div class="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
-                <div class="lg:w-1/3">
+            <div class="flex flex-col lg:flex-row gap-8 items-start">
+                <div class="lg:w-1/4 flex-shrink-0">
                     <h3 class="text-base font-bold mb-1" style="color:var(--text)">Optimisation Levers</h3>
-                    <p class="text-sm leading-relaxed" style="color:var(--muted)">Simulate the impact of improving your conversion and churn over the next 12 months.</p>
+                    <p class="text-sm leading-relaxed" style="color:var(--muted)">Simulate 12-month impact of improving each lever. Newsletter slider activates when list data is entered.</p>
                 </div>
-                <div class="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <div class="lg:w-3/4 grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
+                    <!-- Lever 1: Direct conv -->
                     <div class="card-dark p-4 rounded-xl">
                         <div class="flex justify-between items-end mb-1">
-                            <label class="text-[11px] font-bold" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">Target Owned-to-Paid Conv.</label>
-                            <span class="text-lg font-bold" id="targetConvDisplay" style="color:var(--text)">4.0%</span>
+                            <label class="text-[11px] font-bold" style="color:var(--red);text-transform:uppercase;letter-spacing:.07em">Direct Conv. Rate</label>
+                            <span class="text-lg font-bold" id="targetConvDisplay" style="color:var(--text)">2.0%</span>
                         </div>
-                        <input type="range" id="targetConvSlider" min="1.0" max="25.0" step="0.5" value="4.0">
+                        <p class="text-[10px] mb-2" style="color:var(--muted-2)">Returning → Paid</p>
+                        <input type="range" id="targetConvSlider" min="0.1" max="10.0" step="0.1" value="2.0">
                         <div class="flex items-center justify-between mt-2">
-                            <span class="text-[10px]" style="color:var(--muted)">Target subscriber count</span>
+                            <span class="text-[10px]" style="color:var(--muted)">Target subs (direct)</span>
                             <span class="mono text-[11px] font-bold" id="targetSubsPreview" style="color:var(--red)">—</span>
                         </div>
                     </div>
+                    <!-- Lever 2: Newsletter conv -->
+                    <div class="card-dark p-4 rounded-xl" id="nlLeverCard" style="opacity:0.45;transition:opacity 0.3s;">
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="text-[11px] font-bold" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">Newsletter Conv. Rate</label>
+                            <span class="text-lg font-bold" id="targetNlConvDisplay" style="color:var(--text)">10.0%</span>
+                        </div>
+                        <p class="text-[10px] mb-2" style="color:var(--muted-2)">List → Paid (per new signup)</p>
+                        <input type="range" id="targetNlConvSlider" min="1.0" max="30.0" step="0.5" value="10.0">
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-[10px]" style="color:var(--muted)">Monthly new paid (from NL)</span>
+                            <span class="mono text-[11px] font-bold" id="targetNlSubsPreview" style="color:var(--amber)">—</span>
+                        </div>
+                    </div>
+                    <!-- Lever 3: Churn -->
                     <div class="card-dark p-4 rounded-xl">
                         <div class="flex justify-between items-end mb-1">
-                            <label class="text-[11px] font-bold" style="color:var(--amber);text-transform:uppercase;letter-spacing:.07em">Target Monthly Churn</label>
+                            <label class="text-[11px] font-bold" style="color:var(--emerald);text-transform:uppercase;letter-spacing:.07em">Target Monthly Churn</label>
                             <span class="text-lg font-bold" id="targetChurnDisplay" style="color:var(--text)">4.0%</span>
                         </div>
-                        <input type="range" id="targetChurnSlider" min="1.0" max="15.0" step="0.5" value="4.0">
+                        <p class="text-[10px] mb-2" style="color:var(--muted-2)">Industry avg 4–5% · top &lt;2%</p>
+                        <input type="range" id="targetChurnSlider" min="0.5" max="15.0" step="0.5" value="4.0">
                         <div class="flex items-center justify-between mt-2">
-                            <span class="text-[10px]" style="color:var(--muted)">Implied avg sub lifetime</span>
-                            <span class="mono text-[11px] font-bold" id="targetLifetimePreview" style="color:var(--amber)">—</span>
+                            <span class="text-[10px]" style="color:var(--muted)">Avg subscriber lifetime</span>
+                            <span class="mono text-[11px] font-bold" id="targetLifetimePreview" style="color:var(--emerald)">—</span>
                         </div>
                     </div>
                 </div>
@@ -710,6 +845,27 @@
     </div>
     </div>
 
+    <!-- ======= FOOTER ======= -->
+    <footer class="site-footer">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div>
+                    <img src="https://images.squarespace-cdn.com/content/v1/65f465efcce3711823e07333/db2da779-08f4-40d1-88c8-68e983eae7e5/logo.png?format=300w" alt="Jnomics" class="h-5 opacity-70 mb-3" onerror="this.style.display='none'">
+                    <p class="text-[12px] leading-relaxed max-w-xs" style="color:var(--muted-2)">Making economics work for good journalism. Operating in 26 countries.</p>
+                </div>
+                <div class="flex flex-col items-start sm:items-end gap-2">
+                    <div class="flex items-center gap-4">
+                        <a href="https://www.jnomics.media/about" class="text-[12px] hover:opacity-100 transition-opacity" style="color:var(--muted-2)">About</a>
+                        <a href="https://www.jnomics.media/services" class="text-[12px] hover:opacity-100 transition-opacity" style="color:var(--muted-2)">Services</a>
+                        <a href="https://www.jnomics.media/case-studies" class="text-[12px] hover:opacity-100 transition-opacity" style="color:var(--muted-2)">Case Studies</a>
+                        <a href="https://www.jnomics.media/contact" class="text-[12px] hover:opacity-100 transition-opacity" style="color:var(--muted-2)">Contact</a>
+                    </div>
+                    <p class="mono text-[10px]" style="color:var(--muted-2)">Diagnostic methodology · global industry research · 400+ publishers</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script>
     // =====================================================
     // FORMATTERS
@@ -1044,122 +1200,185 @@
     // PHASE 1: FINANCIAL MODEL
     // =====================================================
     function updateSliders() {
-        const convPct   = parseFloat(document.getElementById('targetConvSlider').value);
-        const churnPct  = parseFloat(document.getElementById('targetChurnSlider').value);
-        const ownedNow  = parseFloat(document.getElementById('owned').value) || 0;
-        document.getElementById('targetConvDisplay').textContent  = convPct.toFixed(2) + '%';
-        document.getElementById('targetChurnDisplay').textContent = churnPct.toFixed(1) + '%';
-        // Live previews under each slider
-        const targetSubs = Math.round(ownedNow * (convPct / 100));
+        const directConvPct = parseFloat(document.getElementById('targetConvSlider').value);
+        const nlConvPct     = parseFloat(document.getElementById('targetNlConvSlider').value);
+        const churnPct      = parseFloat(document.getElementById('targetChurnSlider').value);
+        const ru            = parseFloat(document.getElementById('ru').value)             || 0;
+        const monthlySignups= parseFloat(document.getElementById('monthlySignups').value) || 0;
+
+        document.getElementById('targetConvDisplay').textContent   = directConvPct.toFixed(1) + '%';
+        document.getElementById('targetNlConvDisplay').textContent = nlConvPct.toFixed(1) + '%';
+        // Also update funnel NL display if newsletter active
+        const _owned = parseFloat(document.getElementById('owned').value) || 0;
+        if (_owned > 0) {
+            document.getElementById('nlConvDisplay').textContent = nlConvPct.toFixed(1) + '%';
+            const _sig = parseFloat(document.getElementById('monthlySignups').value) || 0;
+            const _newpaid = Math.round(_sig * (nlConvPct / 100));
+            document.getElementById('f-nl-newpaid').textContent = _newpaid > 0 ? '+' + numFmt.format(_newpaid) + '/mo' : '—';
+            document.getElementById('r-nl-conv').textContent = nlConvPct.toFixed(1) + '%';
+        }
+        document.getElementById('targetChurnDisplay').textContent  = churnPct.toFixed(1) + '%';
+
+        // Direct preview: target subs from returning users
+        const targetDirectSubs = Math.round(ru * (directConvPct / 100));
         document.getElementById('targetSubsPreview').textContent =
-            targetSubs > 0 ? numFmt.format(targetSubs) + ' subs' : '—';
+            targetDirectSubs > 0 ? numFmt.format(targetDirectSubs) + ' subs' : '—';
+
+        // Newsletter preview: monthly new paid from newsletter signups
+        const nlMonthlyNew = Math.round(monthlySignups * (nlConvPct / 100));
+        document.getElementById('targetNlSubsPreview').textContent =
+            monthlySignups > 0 ? '+' + numFmt.format(nlMonthlyNew) + '/mo' : 'enter signups';
+
+        // Lifetime
         const lifetime = churnPct > 0 ? (1 / (churnPct / 100)) : 0;
         document.getElementById('targetLifetimePreview').textContent =
             lifetime > 0 ? lifetime.toFixed(1) + ' mo avg' : '—';
+
         calculateModel();
     }
 
     let donutChartInstance = null;
 
     function calculateModel() {
-        const uu       = parseFloat(document.getElementById('uu').value)       || 0;
-        const ru       = parseFloat(document.getElementById('ru').value)       || 0;
-        const owned    = parseFloat(document.getElementById('owned').value)    || 0;
-        const subs     = parseFloat(document.getElementById('subs').value)     || 0;
-        const arpu     = parseFloat(document.getElementById('arpu').value)     || 0;
-        const churnPct = parseFloat(document.getElementById('churn').value)    || 0;
-        const churn    = churnPct / 100;
-        const newsCost = parseFloat(document.getElementById('newsCost').value) || 0;
-        const platFee  = (parseFloat(document.getElementById('platFee').value) || 0) / 100;
-        const otherRev = parseFloat(document.getElementById('otherRev').value) || 0;
-        const targetConv  = parseFloat(document.getElementById('targetConvSlider').value) / 100;
-        const targetChurn = parseFloat(document.getElementById('targetChurnSlider').value) / 100;
+        const uu            = parseFloat(document.getElementById('uu').value)             || 0;
+        const ru            = parseFloat(document.getElementById('ru').value)             || 0;
+        const owned         = parseFloat(document.getElementById('owned').value)          || 0;
+        const monthlySignups= parseFloat(document.getElementById('monthlySignups').value) || 0;
+        const subs          = parseFloat(document.getElementById('subs').value)           || 0;
+        const arpu          = parseFloat(document.getElementById('arpu').value)           || 0;
+        const churnPct      = parseFloat(document.getElementById('churn').value)          || 0;
+        const churn         = churnPct / 100;
+        const newsCost      = parseFloat(document.getElementById('newsCost').value)       || 0;
+        const platFee       = (parseFloat(document.getElementById('platFee').value) || 0) / 100;
+        const otherRev      = parseFloat(document.getElementById('otherRev').value)       || 0;
 
-        // ---- Funnel ----
-        document.getElementById('overallConv').textContent = pctFmtExact.format(owned > 0 ? subs / owned : 0);
-        document.getElementById('f-uu').textContent    = numFmt.format(uu);
-        document.getElementById('f-ru').textContent    = numFmt.format(ru);
-        document.getElementById('f-owned').textContent = numFmt.format(owned);
-        document.getElementById('f-subs').textContent  = numFmt.format(subs);
-        document.getElementById('r-uu-ru').textContent    = uu > 0 ? pctFmt.format(ru / uu) : '0%';
-        document.getElementById('r-ru-owned').textContent = ru > 0 ? pctFmt.format(owned / ru) : '0%';
+        const targetDirectConv = parseFloat(document.getElementById('targetConvSlider').value)   / 100;
+        const targetNlConv     = parseFloat(document.getElementById('targetNlConvSlider').value)  / 100;
+        const targetChurn      = parseFloat(document.getElementById('targetChurnSlider').value)   / 100;
 
-        // ---- Revenue breakdown ----
-        const readerRevGross = subs * arpu * 12;         // Annual gross reader revenue
-        const taxLost        = readerRevGross * platFee; // Annual platform fee
-        const readerRevNet   = readerRevGross - taxLost; // Net reader revenue after fees
-        const totalNetRev    = readerRevNet + otherRev;  // Total net revenue
+        const hasNewsletter = owned > 0;
 
-        // ---- Sustainability ----
-        // Coverage = total net revenue (reader + other) vs newsroom cost
+        // ── Funnel Path A (direct) ──────────────────────────────────────────
+        const directConvRate = ru > 0 ? subs / ru : 0; // current overall direct rate
+        document.getElementById('directConvDisplay').textContent = pctFmtExact.format(directConvRate);
+        document.getElementById('f-uu').textContent  = numFmt.format(uu);
+        document.getElementById('f-ru').textContent  = numFmt.format(ru);
+        document.getElementById('f-subs').textContent = numFmt.format(subs);
+        document.getElementById('r-uu-ru').textContent   = uu > 0 ? pctFmt.format(ru / uu) : '0%';
+        document.getElementById('r-ru-subs').textContent = ru > 0 ? pctFmtExact.format(subs / ru) : '0.00%';
+
+        // ── Funnel Path B (newsletter — optional) ───────────────────────────
+        const nlFunnelRow   = document.getElementById('nlFunnelRow');
+        const nlLeverCard   = document.getElementById('nlLeverCard');
+        if (hasNewsletter) {
+            nlFunnelRow.style.opacity  = '1';
+            nlLeverCard.style.opacity  = '1';
+            nlLeverCard.style.pointerEvents = 'auto';
+            document.getElementById('nlFunnelHint').textContent = '';
+            // Path B: List Size → Monthly Signups → New Paid/mo (from slider target)
+            document.getElementById('f-owned').textContent     = numFmt.format(owned);
+            document.getElementById('f-nl-signups').textContent = monthlySignups > 0 ? numFmt.format(monthlySignups) : '—';
+            // Mo. growth rate = signups / list size
+            const listGrowthRate = owned > 0 && monthlySignups > 0 ? monthlySignups / owned : 0;
+            document.getElementById('r-nl-growth').textContent = listGrowthRate > 0 ? pctFmt.format(listGrowthRate) + '/mo' : '—';
+            // Target conv from slider
+            document.getElementById('r-nl-conv').textContent   = (targetNlConv * 100).toFixed(1) + '%';
+            const nlNewPaidPerMo = monthlySignups > 0 ? Math.round(monthlySignups * targetNlConv) : 0;
+            document.getElementById('f-nl-newpaid').textContent = nlNewPaidPerMo > 0 ? '+' + numFmt.format(nlNewPaidPerMo) + '/mo' : '—';
+            // Header badge shows target NL conv
+            document.getElementById('nlConvDisplay').textContent = (targetNlConv * 100).toFixed(1) + '%';
+        } else {
+            nlFunnelRow.style.opacity  = '0.3';
+            nlLeverCard.style.opacity  = '0.4';
+            nlLeverCard.style.pointerEvents = 'none';
+            document.getElementById('nlFunnelHint').textContent = '(enter list data above to activate)';
+            document.getElementById('f-owned').textContent      = '—';
+            document.getElementById('f-nl-signups').textContent = '—';
+            document.getElementById('r-nl-growth').textContent  = '—';
+            document.getElementById('r-nl-conv').textContent    = '—';
+            document.getElementById('f-nl-newpaid').textContent = '—';
+            document.getElementById('nlConvDisplay').textContent = '—';
+        }
+
+        // ── Revenue breakdown ───────────────────────────────────────────────
+        const readerRevGross = subs * arpu * 12;
+        const taxLost        = readerRevGross * platFee;
+        const readerRevNet   = readerRevGross - taxLost;
+        const totalNetRev    = readerRevNet + otherRev;
+
+        // ── Sustainability ──────────────────────────────────────────────────
         const coverage = newsCost > 0 ? totalNetRev / newsCost : 0;
-        const covEl = document.getElementById('coveragePercent');
+        const covEl    = document.getElementById('coveragePercent');
         covEl.textContent = pctFmt.format(coverage);
         const col = coverage >= 1 ? 'var(--emerald)' : coverage >= 0.5 ? 'var(--amber)' : 'var(--rose)';
         covEl.style.color = col;
         document.getElementById('coverageBar').style.width      = `${Math.min(coverage, 1) * 100}%`;
         document.getElementById('coverageBar').style.background = col;
 
-        // ---- Revenue mix panel ----
+        // ── Revenue mix ─────────────────────────────────────────────────────
         const readerPct = totalNetRev > 0 ? readerRevNet / totalNetRev : 0;
-        document.getElementById('readerPct').textContent  = pctFmt.format(readerPct);
-        document.getElementById('readerRevAmt').textContent = euroFmt.format(readerRevNet);
-        document.getElementById('otherRevAmt').textContent  = euroFmt.format(otherRev);
-        document.getElementById('totalRevAmt').textContent  = euroFmt.format(totalNetRev);
-        // ---- MRR + LTV ----
+        document.getElementById('readerPct').textContent     = pctFmt.format(readerPct);
+        document.getElementById('readerRevAmt').textContent  = euroFmt.format(readerRevNet);
+        document.getElementById('otherRevAmt').textContent   = euroFmt.format(otherRev);
+        document.getElementById('totalRevAmt').textContent   = euroFmt.format(totalNetRev);
+
+        // ── MRR + LTV ───────────────────────────────────────────────────────
         const mrr = readerRevNet / 12;
         const ltv = churn > 0 ? arpu * (1 - platFee) / churn : 0;
         document.getElementById('mrrAmt').textContent = euroFmt.format(mrr);
         document.getElementById('ltvAmt').textContent = euroFmt.format(ltv);
         document.getElementById('taxAmt').textContent = euroFmt.format(taxLost);
 
-        // ---- Donut chart ----
         renderDonut(readerRevNet, otherRev);
 
-        // ---- 12-month trajectory (reader revenue only, net of platform fees) ----
-        // Monthly reader cost target (reader rev contribution to breakeven)
+        // ── 12-month trajectory (reader revenue, net of fees) ───────────────
+        // Breakeven = monthly reader rev needed to cover what other rev doesn't
         const readerBreakeven = Math.max(0, newsCost - otherRev) / 12;
 
-        // Status quo: subscribers stabilise at churn equilibrium
-        // Net new = acquired - churned. Assume acquired = subs * churn (steady state)
-        // So sqSubs stays flat. This is correct: status quo = no growth in subs.
-        const sqMonthlyReaderRev = subs * arpu * (1 - platFee); // flat every month
+        // STATUS QUO: flat — acquisitions ≈ churns, no intentional growth
+        const sqMonthlyRev = subs * arpu * (1 - platFee);
 
-        // Optimised: grow subs by converting owned audience to targetConv rate
-        // AND reduce churn to targetChurn
-        // New subs target = owned * targetConv
-        // Monthly growth in subs (linear ramp over 12 months)
-        const targetSubsCount = owned * targetConv;
-        const monthlyNewSubs  = Math.max(0, (targetSubsCount - subs) / 12);
+        // OPTIMISED paths
+        // Path A: grow direct subs toward (ru × targetDirectConv)
+        const targetDirectSubs  = ru * targetDirectConv;
+        const directGap         = Math.max(0, targetDirectSubs - subs);
+        const monthlyDirectGain = directGap / 12; // linear ramp over 12 months
+
+        // Path B: monthly new paid from newsletter signups (compounds each month)
+        // Each month, monthlySignups new people join list; targetNlConv% of them become paid
+        const nlMonthlyNewPaid = hasNewsletter ? monthlySignups * targetNlConv : 0;
 
         let labels = [], sqData = [], bestData = [];
-        let sqSubs = subs, bestSubs = subs;
+        let bestSubs = subs;
         let totalSqRR = 0, totalBestRR = 0;
 
         for (let i = 1; i <= 12; i++) {
             labels.push(`M${i}`);
 
-            // Status quo: stable subscriber base (acquisitions ≈ churns)
-            const sqRev = sqSubs * arpu * (1 - platFee);
-            sqData.push(sqRev);
-            totalSqRR += sqRev;
+            // Status quo: flat base
+            sqData.push(sqMonthlyRev);
+            totalSqRR += sqMonthlyRev;
 
-            // Optimised: grow subs, reduce churn
-            bestSubs = bestSubs + monthlyNewSubs - (bestSubs * targetChurn);
+            // Optimised: churn on existing, gain from direct ramp + newsletter
+            bestSubs = bestSubs * (1 - targetChurn)
+                     + monthlyDirectGain       // direct conversion improvement
+                     + nlMonthlyNewPaid;       // newsletter → paid monthly inflow
             const bestRev = bestSubs * arpu * (1 - platFee);
             bestData.push(bestRev);
             totalBestRR += bestRev;
         }
 
         document.getElementById('unlockedRev').textContent = euroFmt.format(Math.max(0, totalBestRR - totalSqRR));
-        // Refresh slider previews (so they're correct on initial load too)
-        const _conv  = parseFloat(document.getElementById('targetConvSlider').value);
-        const _churn = parseFloat(document.getElementById('targetChurnSlider').value);
-        const _ts    = Math.round(owned * (_conv / 100));
-        document.getElementById('targetSubsPreview').textContent     = _ts > 0 ? numFmt.format(_ts) + ' subs' : '—';
-        const _lt = _churn > 0 ? (1 / (_churn / 100)) : 0;
+
+        // Refresh slider previews
+        const _ts = Math.round(ru * targetDirectConv);
+        document.getElementById('targetSubsPreview').textContent = _ts > 0 ? numFmt.format(_ts) + ' subs' : '—';
+        const _nlNew = Math.round(monthlySignups * targetNlConv);
+        document.getElementById('targetNlSubsPreview').textContent = monthlySignups > 0 ? '+' + numFmt.format(_nlNew) + '/mo' : 'enter signups';
+        const _lt = targetChurn > 0 ? 1 / targetChurn : 0;
         document.getElementById('targetLifetimePreview').textContent = _lt > 0 ? _lt.toFixed(1) + ' mo avg' : '—';
-        renderLineChart(labels, sqData, bestData, readerBreakeven);
+
+        renderLineChart(labels, sqData, bestData, Math.max(0, readerBreakeven));
     }
 
     function renderDonut(readerRevNet, otherRev) {
@@ -1201,9 +1420,32 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(20,20,20,0.95)',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        titleColor: 'rgba(138,129,120,0.8)',
+                        titleFont: { family: 'DM Mono', size: 10 },
+                        bodyColor: '#F5F0EB',
+                        bodyFont: { family: 'DM Sans', size: 12, weight: 600 },
+                        callbacks: {
+                            label: ctx => {
+                                const names = ['Optimised', 'Status Quo', 'Breakeven'];
+                                const v = ctx.parsed.y;
+                                return ` ${names[ctx.datasetIndex]}: €${v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v)}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { ticks: { color: 'rgba(138,129,120,0.8)', callback: v => '€'+(v/1000).toFixed(0)+'k', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: {
+                        ticks: { color: 'rgba(138,129,120,0.8)', callback: v => v >= 1000 ? '€'+(v/1000).toFixed(0)+'k' : '€'+Math.round(v), font: { family: 'DM Mono', size: 10 } },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    },
                     x: { ticks: { color: 'rgba(138,129,120,0.8)', font: { family: 'DM Mono', size: 10 } }, grid: { display: false } }
                 }
             }
@@ -1460,12 +1702,27 @@
     // =====================================================
     // LISTENERS
     // =====================================================
-    ['uu','ru','owned','subs','arpu','churn','newsCost','platFee','otherRev'].forEach(id => {
+    ['uu','ru','owned','monthlySignups','subs','arpu','churn','newsCost','platFee','otherRev'].forEach(id => {
         document.getElementById(id).addEventListener('input', calculateModel);
     });
     document.getElementById('targetConvSlider').addEventListener('input', updateSliders);
+    document.getElementById('targetNlConvSlider').addEventListener('input', updateSliders);
     document.getElementById('targetChurnSlider').addEventListener('input', updateSliders);
     calculateModel();
+
+    // ── Nav scroll-spy ──────────────────────────────────────────────────────
+    (function() {
+        const nav1 = document.getElementById('nav1');
+        const nav2 = document.getElementById('nav2');
+        const p2   = document.getElementById('phase2');
+        if (!p2) return;
+        const obs = new IntersectionObserver(entries => {
+            const inView = entries[0].isIntersecting;
+            nav1.classList.toggle('active', !inView);
+            nav2.classList.toggle('active', inView);
+        }, { threshold: 0.1, rootMargin: '-80px 0px 0px 0px' });
+        obs.observe(p2);
+    })();
     </script>
 </body>
 </html>
